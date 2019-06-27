@@ -1,0 +1,26 @@
+{
+  "name": "ts-sequence-diagrams",
+  "version": "0.0.1",
+  "description": "",
+  "main": "src/index.ts",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "webpack --config webpack.config.js --parallel"
+  },
+  "author": "Vianney FAIVRE",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "snapsvg": "^0.5.1",
+    "webpack": "^4.35.0"
+  },
+  "devDependencies": {
+    "@types/snapsvg": "^0.5.0",
+    "lex-parser": "^0.1.4",
+    "imports-loader": "^0.8.0",
+    "ts-loader": "^6.0.4",
+    "typescript": "^3.5.2",
+    "webpack-cli": "^3.3.5"
+  }
+}
