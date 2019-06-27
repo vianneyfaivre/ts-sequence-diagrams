@@ -1,35 +1,68 @@
 import Actor from "../model/Actor";
 import * as Snap from 'snapsvg';
+import Signal from "../model/Signal";
 
 export default class SvgEngine {
 
     paper: Snap.Paper;
+    actors: Snap.Element[];
 
     constructor(svgElementId: string) {
         var el = document.getElementById(svgElementId) as unknown as SVGElement;
         this.paper = Snap(el);
+        this.actors = [];
+    }
+
+    drawSignals(signals: Signal[]) {
+
+        const DISTANCE_BETWEEN_SIGNALS = 50;
+
+        for (var signal of signals) {
+
+            const rectActorA = this.actors.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();
+            const rectActorB = this.actors.filter(actor => actor.attr("actor-name") === signal.actorB.name).pop();
+
+            if(rectActorA && rectActorB) {
+                const signalAX = (rectActorA.getBBox().width / 2) + rectActorA.getBBox().x;
+                const signalBX = (rectActorB.getBBox().width / 2) + rectActorB.getBBox().x;
+                const signalY = rectActorA.getBBox().h + DISTANCE_BETWEEN_SIGNALS;
+
+                var signalLine = this.paper.line(signalAX, signalY, signalBX, signalY);
+                signalLine.attr({
+                    "stroke": "black",
+                    "stroke-width": 2
+                });
+            }
+        }
     }
 
     drawActors(actors: Actor[]) {
         var offsetX = 0;
+        const DISTANCE_BETWEEN_ACTORS = 200;
+
         for (var actorName in actors) {
 
             var actor = actors[actorName];
 
-            this.drawActor(actor, offsetX, 0);
+            var actorRect = this.drawActor(actor, offsetX, 0);
+            this.actors.push(actorRect);
 
-            offsetX += 200;
-        };
+            offsetX += DISTANCE_BETWEEN_ACTORS;
+        }
     }
 
     drawActor(actor: Actor, x: number, y: number) {
 
         const RECT_WIDTH = 100;
         const RECT_HEIGHT = 50;
+        const LIFE_LINE_HEIGHT = 500;
 
         console.log(`Drawing Actor ${actor.name}`);
 
         var rect: Snap.Element = this.drawRect(x, y, RECT_WIDTH, RECT_HEIGHT);
+        rect.attr({
+            "actor-name": actor.name
+        });
 
         // align center
         var textX = (RECT_WIDTH / 2) + x;
@@ -38,14 +71,15 @@ export default class SvgEngine {
 
         var lineX = x + (RECT_WIDTH / 2);
         var lineY1 = RECT_HEIGHT;
-        var lineY2 = RECT_HEIGHT + 500;
+        var lineY2 = RECT_HEIGHT + LIFE_LINE_HEIGHT;
+
         var lifeLine = this.paper.line(lineX, lineY1, lineX, lineY2);
         lifeLine.attr({
             "stroke": "black",
             "stroke-width": 2
         });
 
-        return text;
+        return rect;
     }
 
     drawRect(x: number, y: number, w: number, h: number) {

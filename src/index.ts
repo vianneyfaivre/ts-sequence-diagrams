@@ -8,3 +8,4 @@ var data: ParserScope = parser.parse("Vianney->Server: Does something");
 var svgEngine = new SvgEngine("diagram-container");
 
 svgEngine.drawActors(data.actors);
+svgEngine.drawSignals(data.signals);
