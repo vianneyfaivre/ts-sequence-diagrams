@@ -16,41 +16,54 @@ export default class SvgEngine {
 
             var actor = actors[actorName];
 
-            this.drawActor(actor, offsetX, 0, 100, 100);
+            this.drawActor(actor, offsetX, 0);
 
             offsetX += 200;
         };
     }
 
-    drawActor(actor: Actor, x: number, y: number, w: number, h: number) {
+    drawActor(actor: Actor, x: number, y: number) {
+
+        const RECT_WIDTH = 100;
+        const RECT_HEIGHT = 50;
 
         console.log(`Drawing Actor ${actor.name}`);
 
-        var rect: Snap.Element = this.drawRect(x, y, w, h);
+        var rect: Snap.Element = this.drawRect(x, y, RECT_WIDTH, RECT_HEIGHT);
 
-        var textX = ((w * 50) / 100) + x;
-        var textY = ((h * 50) / 100);
-
+        // align center
+        var textX = (RECT_WIDTH / 2) + x;
+        var textY = RECT_HEIGHT / 2;
         var text: Snap.Element = this.drawText(textX, textY, actor.name);
 
-        text.attr({
-            "dominant-baseline": "middle",
-            "text-anchor": "middle"
+        var lineX = x + (RECT_WIDTH / 2);
+        var lineY1 = RECT_HEIGHT;
+        var lineY2 = RECT_HEIGHT + 500;
+        var lifeLine = this.paper.line(lineX, lineY1, lineX, lineY2);
+        lifeLine.attr({
+            "stroke": "black",
+            "stroke-width": 2
         });
 
         return text;
     }
 
     drawRect(x: number, y: number, w: number, h: number) {
-        return this.paper.rect(x, y, w, h).attr({
-            'stroke': '#000000',
+        var rect = this.paper.rect(x, y, w, h);
+        rect.attr({
+            'stroke': 'black',
             'stroke-width': 2,
-            'fill': '#fff'
+            'fill': 'white'
         });
+        return rect;
     }
 
     drawText(x: number, y: number, text: string) {
         var t = this.paper.text(x, y, text);
+        t.attr({
+            "dominant-baseline": "middle",
+            "text-anchor": "middle"
+        });
         return t;
     }
 }
