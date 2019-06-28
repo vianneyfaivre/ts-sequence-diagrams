@@ -7,7 +7,8 @@
     "test": "test"
   },
   "scripts": {
-    "build": "webpack --config webpack.config.js --parallel"
+    "build": "webpack --config webpack.config.js --parallel",
+    "watch": "webpack --watch"
   },
   "author": "Vianney FAIVRE",
   "license": "GPL-3.0-only",
@@ -17,10 +18,11 @@
   },
   "devDependencies": {
     "@types/snapsvg": "^0.5.0",
-    "lex-parser": "^0.1.4",
     "imports-loader": "^0.8.0",
+    "lex-parser": "^0.1.4",
     "ts-loader": "^6.0.4",
     "typescript": "^3.5.2",
-    "webpack-cli": "^3.3.5"
+    "webpack-cli": "^3.3.5",
+    "webpack-dev-server": "^3.7.2"
   }
 }
