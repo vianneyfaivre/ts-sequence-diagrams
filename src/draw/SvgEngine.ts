@@ -26,6 +26,8 @@ export default class SvgEngine {
 
     drawSignal(signal: Signal, offsetY: number) {
         const MARKER_END = this.paper.path('M 0 0 L 5 2.5 L 0 5 z').marker(0, 0, 5, 5, 5, 2.5);
+        const SIGNAL_TEXT_OFFSET_X = 5;
+        const SIGNAL_TEXT_OFFSET_Y = 5;
 
         const rectActorA = this.actors.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();
         const rectActorB = this.actors.filter(actor => actor.attr("actor-name") === signal.actorB.name).pop();
@@ -41,6 +43,32 @@ export default class SvgEngine {
                 "stroke-width": 2,
                 'markerEnd': MARKER_END
             });
+
+            const signalGoingForward = (signalAX - signalBX) < 0;
+
+            if(signalGoingForward) {
+                console.log(`Signal going forward from ${signal.actorA.name} to ${signal.actorB.name}`);
+                const textX = signalAX + SIGNAL_TEXT_OFFSET_X;
+                const textY = signalY - SIGNAL_TEXT_OFFSET_Y;
+                this.drawText(textX, textY, signal.message);
+            } else {
+                console.log(`Signal going backward from ${signal.actorA.name} to ${signal.actorB.name}`);
+                
+                // First, draw the text
+                var textX = signalAX - SIGNAL_TEXT_OFFSET_X;
+                const textY = signalY - SIGNAL_TEXT_OFFSET_Y;
+                var text = this.drawText(textX, textY, signal.message);
+                
+                // Get its width so it can be moved right
+                const textWidth = text.getBBox().w;
+
+                // Remove the current text
+                text.remove();
+
+                // And create a new one that will be correctly placed
+                textX = textX - textWidth;
+                text = this.drawText(textX, textY, signal.message);
+            }
         } else {
             console.warn(`Could not draw signal: ${signal}`);
         }
@@ -66,6 +94,7 @@ export default class SvgEngine {
         const RECT_WIDTH = 100;
         const RECT_HEIGHT = 50;
         const LIFE_LINE_HEIGHT = 500;
+        const TEXT_CENTERED = true;
 
         console.log(`Drawing Actor ${actor.name}`);
 
@@ -77,7 +106,7 @@ export default class SvgEngine {
         // align center
         var textX = (RECT_WIDTH / 2) + x;
         var textY = RECT_HEIGHT / 2;
-        var text: Snap.Element = this.drawText(textX, textY, actor.name);
+        var text: Snap.Element = this.drawText(textX, textY, actor.name, TEXT_CENTERED);
 
         var lineX = x + (RECT_WIDTH / 2);
         var lineY1 = RECT_HEIGHT;
@@ -102,12 +131,16 @@ export default class SvgEngine {
         return rect;
     }
 
-    drawText(x: number, y: number, text: string) {
+    drawText(x: number, y: number, text: string, centered?: boolean) {
         var t = this.paper.text(x, y, text);
-        t.attr({
-            "dominant-baseline": "middle",
-            "text-anchor": "middle"
-        });
+
+        if(centered) {
+            t.attr({
+                "dominant-baseline": "middle",
+                "text-anchor": "middle"
+            });
+        }
+         
         return t;
     }
 }
