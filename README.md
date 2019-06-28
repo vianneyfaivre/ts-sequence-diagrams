@@ -12,6 +12,7 @@
 * Notes
 * Compute SVG size based on what has to be drawn
 * Loops
+* Handle incorrect inputs
 
 ## Build the grammar
 
