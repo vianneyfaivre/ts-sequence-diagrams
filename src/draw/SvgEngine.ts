@@ -20,7 +20,11 @@ export default class SvgEngine {
         for(const signal of signals) {
             this.drawSignal(signal, offsetY);
 
-            offsetY += DISTANCE_BETWEEN_SIGNALS;
+            if(signal.toSameActor()) {
+                offsetY += DISTANCE_BETWEEN_SIGNALS * 2;
+            } else {
+                offsetY += DISTANCE_BETWEEN_SIGNALS;
+            }
         }
     }
 
@@ -30,9 +34,8 @@ export default class SvgEngine {
         const rectActorB = this.actors.filter(actor => actor.attr("actor-name") === signal.actorB.name).pop();
         
         if(rectActorA && rectActorB) {
-            const signalToSelf = signal.actorA.name === signal.actorB.name; 
             
-            if(signalToSelf) {
+            if(signal.toSameActor()) {
                 const SIGNAL_SELF_WIDTH = 25;
                 const SIGNAL_SELF_HEIGHT = 50;
                 const SIGNAL_SELF_TEXT_OFFSET_X = SIGNAL_SELF_WIDTH + 5;

@@ -24,6 +24,10 @@ class Signal {
         this.message = message;
     }
 
+    toSameActor() {
+        return this.actorA.name === this.actorB.name; 
+    }
+    
     toString() {
         return "From "+this.actorA+" to "+this.actorB+" : "+this.message;
     }
