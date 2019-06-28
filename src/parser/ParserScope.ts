@@ -1,5 +1,5 @@
 import Actor from "../model/Actor";
-import Signal from "../model/Signal";
+import {Signal} from "../model/Signal";
 
 export default class ParserScope {
 

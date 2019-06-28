@@ -1,6 +1,6 @@
 import Actor from "../model/Actor";
 import * as Snap from 'snapsvg';
-import Signal from "../model/Signal";
+import {LineType, Signal} from "../model/Signal";
 
 export default class SvgEngine {
 
@@ -36,6 +36,7 @@ export default class SvgEngine {
             const signalAX = (rectActorA.getBBox().width / 2) + rectActorA.getBBox().x;
             const signalBX = (rectActorB.getBBox().width / 2) + rectActorB.getBBox().x;
             const signalY = rectActorA.getBBox().h + offsetY;
+            const dottedLine = signal.lineType === LineType.RESPONSE;
 
             var signalLine = this.paper.line(signalAX, signalY, signalBX, signalY);
             signalLine.attr({
@@ -43,6 +44,11 @@ export default class SvgEngine {
                 "stroke-width": 2,
                 'markerEnd': MARKER_END
             });
+            if(dottedLine) {
+                signalLine.attr({
+                    "stroke-dasharray": "5,5"
+                });
+            }
 
             const signalGoingForward = (signalAX - signalBX) < 0;
 

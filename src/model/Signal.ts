@@ -1,16 +1,25 @@
 import Actor from "./Actor";
 
-export default class Signal {
+enum LineType {
+    REQUEST,
+    RESPONSE
+}
+
+class Signal {
     actorA: Actor;
     actorB: Actor;
-    lineType: string;
+    lineType: LineType;
     arrowType: string;
     message: string;
 
     constructor(actorA: Actor, actorB: Actor, lineType: string, arrowType: string, message: string) {
         this.actorA = actorA;
         this.actorB = actorB;
-        this.lineType = lineType;
+        if(lineType === "--") {
+            this.lineType = LineType.RESPONSE;
+        } else {
+            this.lineType = LineType.REQUEST;
+        }
         this.arrowType = arrowType;
         this.message = message;
     }
@@ -19,3 +28,5 @@ export default class Signal {
         return "From "+this.actorA+" to "+this.actorB+" : "+this.message;
     }
 }
+
+export {LineType, Signal};
