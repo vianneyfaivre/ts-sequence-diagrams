@@ -1,4 +1,18 @@
-# Build the grammar
+# Typescript Sequence Diagrams
+
+## TODO
+
+* Move test code from index.ts to test/basic.html
+* Add message above signals
+* Response signals should use a dotted line
+* Signal to self
+* Text boundaries
+* Signal that creates an actor
+* Signal that destroys an actor
+* Notes
+* Loops
+
+## Build the grammar
 
 ```
 npm install jison -g
@@ -14,7 +28,7 @@ return new Parser;
 export default SequenceDiagram;
 ```
 
- # Run
+## Run
 
 ```
 npm run-script watch
