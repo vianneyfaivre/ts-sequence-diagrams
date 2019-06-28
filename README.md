@@ -17,5 +17,7 @@ export default SequenceDiagram;
  # Run
 
 ```
-npm run-script build
+npm run-script watch
 ```
+
+Open `./test/basic.html`
