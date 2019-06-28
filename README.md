@@ -10,6 +10,7 @@
 * Signal that creates an actor
 * Signal that destroys an actor
 * Notes
+* Compute SVG size based on what has to be drawn
 * Loops
 
 ## Build the grammar
