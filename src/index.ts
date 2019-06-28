@@ -10,6 +10,7 @@ Backend-->Server: what?
 Server->Backend: ping
 Backend-->Server: pong
 Server-->Vianney: pong
+Vianney->Vianney: process
 `);
 
 var svgEngine = new SvgEngine("diagram-container");

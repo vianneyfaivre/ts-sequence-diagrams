@@ -3,7 +3,6 @@
 ## TODO
 
 * Move test code from index.ts to test/basic.html
-* Signal to self
 * Text boundaries
 * Signal that creates an actor
 * Signal that destroys an actor
