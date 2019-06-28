@@ -14,25 +14,31 @@ export default class SvgEngine {
     }
 
     drawSignals(signals: Signal[]) {
+        for(const signal of signals) {
+            this.drawSignal(signal);
+        }
+    }
 
+    drawSignal(signal: Signal) {
         const DISTANCE_BETWEEN_SIGNALS = 50;
+        const MARKER_END = this.paper.path('M 0 0 L 5 2.5 L 0 5 z').marker(0, 0, 5, 5, 5, 2.5);
 
-        for (var signal of signals) {
+        const rectActorA = this.actors.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();
+        const rectActorB = this.actors.filter(actor => actor.attr("actor-name") === signal.actorB.name).pop();
 
-            const rectActorA = this.actors.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();
-            const rectActorB = this.actors.filter(actor => actor.attr("actor-name") === signal.actorB.name).pop();
+        if(rectActorA && rectActorB) {
+            const signalAX = (rectActorA.getBBox().width / 2) + rectActorA.getBBox().x;
+            const signalBX = (rectActorB.getBBox().width / 2) + rectActorB.getBBox().x;
+            const signalY = rectActorA.getBBox().h + DISTANCE_BETWEEN_SIGNALS;
 
-            if(rectActorA && rectActorB) {
-                const signalAX = (rectActorA.getBBox().width / 2) + rectActorA.getBBox().x;
-                const signalBX = (rectActorB.getBBox().width / 2) + rectActorB.getBBox().x;
-                const signalY = rectActorA.getBBox().h + DISTANCE_BETWEEN_SIGNALS;
-
-                var signalLine = this.paper.line(signalAX, signalY, signalBX, signalY);
-                signalLine.attr({
-                    "stroke": "black",
-                    "stroke-width": 2
-                });
-            }
+            var signalLine = this.paper.line(signalAX, signalY, signalBX, signalY);
+            signalLine.attr({
+                "stroke": "black",
+                "stroke-width": 2,
+                'markerEnd': MARKER_END
+            });
+        } else {
+            console.warn(`Could not draw signal: ${signal}`);
         }
     }
 
