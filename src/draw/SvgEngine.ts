@@ -14,13 +14,17 @@ export default class SvgEngine {
     }
 
     drawSignals(signals: Signal[]) {
+        const DISTANCE_BETWEEN_SIGNALS = 50;
+        var offsetY = DISTANCE_BETWEEN_SIGNALS;
+
         for(const signal of signals) {
-            this.drawSignal(signal);
+            this.drawSignal(signal, offsetY);
+
+            offsetY += DISTANCE_BETWEEN_SIGNALS;
         }
     }
 
-    drawSignal(signal: Signal) {
-        const DISTANCE_BETWEEN_SIGNALS = 50;
+    drawSignal(signal: Signal, offsetY: number) {
         const MARKER_END = this.paper.path('M 0 0 L 5 2.5 L 0 5 z').marker(0, 0, 5, 5, 5, 2.5);
 
         const rectActorA = this.actors.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();
@@ -29,7 +33,7 @@ export default class SvgEngine {
         if(rectActorA && rectActorB) {
             const signalAX = (rectActorA.getBBox().width / 2) + rectActorA.getBBox().x;
             const signalBX = (rectActorB.getBBox().width / 2) + rectActorB.getBBox().x;
-            const signalY = rectActorA.getBBox().h + DISTANCE_BETWEEN_SIGNALS;
+            const signalY = rectActorA.getBBox().h + offsetY;
 
             var signalLine = this.paper.line(signalAX, signalY, signalBX, signalY);
             signalLine.attr({
