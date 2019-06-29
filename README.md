@@ -4,7 +4,6 @@
 
 Features:
 
-* Signal that goes from actor A to C (going over B)
 * Text boundaries
 * Signal that creates an actor
 * Signal that destroys an actor
@@ -12,6 +11,7 @@ Features:
 * Loops
 * Handle incorrect inputs
 * Compute SVG size based on what has to be drawn
+* Participants order
 
 Tech stuff:
 

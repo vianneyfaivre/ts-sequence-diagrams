@@ -132,7 +132,6 @@ export default class SvgEngine {
         const RECT_WIDTH = 100;
         const RECT_HEIGHT = 50;
         const LIFE_LINE_HEIGHT = 500;
-        const TEXT_CENTERED = true;
 
         console.log(`Drawing Actor ${actor.name}`);
 
@@ -141,10 +140,9 @@ export default class SvgEngine {
             "actor-name": actor.name
         });
 
-        // align center
         var textX = (RECT_WIDTH / 2) + x;
         var textY = RECT_HEIGHT / 2;
-        var text: Snap.Element = this.shapesGenerator.drawText(textX, textY, actor.name, [TextOption.CENTERED]);
+        this.shapesGenerator.drawText(textX, textY, actor.name, [TextOption.CENTERED]);
 
         var lineX = x + (RECT_WIDTH / 2);
         var lineY1 = RECT_HEIGHT;

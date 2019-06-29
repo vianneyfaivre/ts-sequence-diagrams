@@ -11,6 +11,7 @@ Server->Backend: ping
 Backend->Backend: process
 Backend-->Server: pong
 Server-->Vianney: pong
+Vianney->Backend: shutdown
 `);
 
 var svgEngine = new SvgEngine("diagram-container");
