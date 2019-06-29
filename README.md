@@ -2,14 +2,21 @@
 
 ## TODO
 
-* Move test code from index.ts to test/basic.html
+Features:
+
+* Signal that goes from actor A to C (going over B)
 * Text boundaries
 * Signal that creates an actor
 * Signal that destroys an actor
 * Notes
-* Compute SVG size based on what has to be drawn
 * Loops
 * Handle incorrect inputs
+* Compute SVG size based on what has to be drawn
+
+Tech stuff:
+
+* Dependency injection http://inversify.io/
+* Move test code from index.ts to test/basic.html
 
 ## Build the grammar
 
