@@ -1,5 +1,5 @@
-/** js sequence diagrams
- *  https://bramp.github.io/js-sequence-diagrams/
+/** 
+ *  Copied from https://bramp.github.io/js-sequence-diagrams/, then updated
  *  (c) 2012-2017 Andrew Brampton (bramp.net)
  *  Simplified BSD license.
  */
@@ -18,6 +18,7 @@
 [\r\n]+           return 'NL';
 \s+               /* skip whitespace */
 \#[^\r\n]*        /* skip comments */
+"destroy"		  return 'destroy';
 "participant"     return 'participant';
 "left of"         return 'PLACEMENT_LEFTOF';
 "right of"        return 'PLACEMENT_RIGHTOF';
@@ -30,8 +31,9 @@
 \"[^"]+\"         return 'ACTOR';
 "--"              return 'RESPONSE';
 "-"               return 'REQUEST';
+">*"              return 'ACTOR_CREATION';
 ">"               return 'ARROW';
-[^\r\n]+         return 'MESSAGE';
+[^\r\n]+          return 'MESSAGE';
 <<EOF>>           return 'EOF';
 .                 return 'INVALID';
 
@@ -56,10 +58,11 @@ line
 	;
 
 statement
-	: 'participant' actor_alias { $2; }
+	: 'participant' actor { $2; }
 	| signal               { yy.addSignal($1); }
 	| note_statement       { yy.addSignal($1); }
 	| 'title' message      { yy.setTitle($2);  }
+	| 'destroy' actor_destroy 	   { yy.destroyActor($2)}
 	;
 
 note_statement
@@ -76,12 +79,12 @@ signal
 	: actor signaltype actor message { $$ = yy.createSignal($1, $2, $3, $4); }
 	;
 
-actor
-	: ACTOR { $$ = yy.getActor($1); }
+actor_destroy
+	: ACTOR { $$ = $1 }
 	;
 
-actor_alias
-	: ACTOR { $$ = yy.getActor($1); }
+actor
+	: ACTOR { $$ = $1 }
 	;
 
 signaltype
@@ -95,7 +98,8 @@ linetype
 	;
 
 arrowtype
-	: ARROW     { $$ = $1; }
+    : ACTOR_CREATION	{ $$ = $1; }
+	| ARROW     		{ $$ = $1; }
 	;
 
 message

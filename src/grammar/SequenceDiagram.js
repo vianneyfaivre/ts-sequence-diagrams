@@ -72,12 +72,12 @@
   }
 */
 var SequenceDiagram = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[5,8,9,13,15,22],$V1=[1,13],$V2=[1,17],$V3=[22,27];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[5,8,9,13,15,17,23],$V1=[1,14],$V2=[1,17],$V3=[23,28,29];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"start":3,"document":4,"EOF":5,"line":6,"statement":7,"NL":8,"participant":9,"actor_alias":10,"signal":11,"note_statement":12,"title":13,"message":14,"note":15,"placement":16,"actor":17,"over":18,"left_of":19,"right_of":20,"signaltype":21,"ACTOR":22,"linetype":23,"arrowtype":24,"REQUEST":25,"RESPONSE":26,"ARROW":27,"MESSAGE":28,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"EOF",8:"NL",9:"participant",13:"title",15:"note",18:"over",19:"left_of",20:"right_of",22:"ACTOR",25:"REQUEST",26:"RESPONSE",27:"ARROW",28:"MESSAGE"},
-productions_: [0,[3,2],[4,0],[4,2],[6,1],[6,1],[7,2],[7,1],[7,1],[7,2],[12,4],[12,4],[16,1],[16,1],[11,4],[17,1],[10,1],[21,2],[21,1],[23,1],[23,1],[24,1],[14,1]],
+symbols_: {"error":2,"start":3,"document":4,"EOF":5,"line":6,"statement":7,"NL":8,"participant":9,"actor":10,"signal":11,"note_statement":12,"title":13,"message":14,"destroy":15,"actor_destroy":16,"note":17,"placement":18,"over":19,"left_of":20,"right_of":21,"signaltype":22,"ACTOR":23,"linetype":24,"arrowtype":25,"REQUEST":26,"RESPONSE":27,"ACTOR_CREATION":28,"ARROW":29,"MESSAGE":30,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"EOF",8:"NL",9:"participant",13:"title",15:"destroy",17:"note",19:"over",20:"left_of",21:"right_of",23:"ACTOR",26:"REQUEST",27:"RESPONSE",28:"ACTOR_CREATION",29:"ARROW",30:"MESSAGE"},
+productions_: [0,[3,2],[4,0],[4,2],[6,1],[6,1],[7,2],[7,1],[7,1],[7,2],[7,2],[12,4],[12,4],[18,1],[18,1],[11,4],[16,1],[10,1],[22,2],[22,1],[24,1],[24,1],[25,1],[25,1],[14,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -98,34 +98,37 @@ break;
 case 9:
  yy.setTitle($$[$0]);  
 break;
-case 10: case 11:
+case 10:
+ yy.destroyActor($$[$0])
+break;
+case 11: case 12:
  this.$ = yy.createNote($$[$0-1], $$[$0-2], $$[$0]); 
 break;
-case 12:
+case 13:
  this.$ = "PLACEMENT_LEFTOF"; 
 break;
-case 13:
+case 14:
  this.$ = "PLACEMENT_RIGHTOF"; 
 break;
-case 14:
+case 15:
  this.$ = yy.createSignal($$[$0-3], $$[$0-2], $$[$0-1], $$[$0]); 
 break;
-case 15: case 16:
- this.$ = yy.getActor($$[$0]); 
+case 16: case 17:
+ this.$ = $$[$0] 
 break;
-case 17:
+case 18:
  this.$ = $$[$0-1] + '_' + $$[$0]; 
 break;
-case 18: case 19: case 20: case 21:
+case 19: case 20: case 21: case 22: case 23:
  this.$ = $$[$0]; 
 break;
-case 22:
+case 24:
  this.$ = $$[$0].substring(1); 
 break;
 }
 },
-table: [o($V0,[2,2],{3:1,4:2}),{1:[3]},{5:[1,3],6:4,7:5,8:[1,6],9:[1,7],11:8,12:9,13:[1,10],15:[1,12],17:11,22:$V1},{1:[2,1]},o($V0,[2,3]),o($V0,[2,4]),o($V0,[2,5]),{10:14,22:[1,15]},o($V0,[2,7]),o($V0,[2,8]),{14:16,28:$V2},{21:18,23:19,25:[1,20],26:[1,21]},{16:22,18:[1,23],19:[1,24],20:[1,25]},o([25,26,28],[2,15]),o($V0,[2,6]),o($V0,[2,16]),o($V0,[2,9]),o($V0,[2,22]),{17:26,22:$V1},{22:[2,18],24:27,27:[1,28]},o($V3,[2,19]),o($V3,[2,20]),{17:29,22:$V1},{17:30,22:$V1},{22:[2,12]},{22:[2,13]},{14:31,28:$V2},{22:[2,17]},{22:[2,21]},{14:32,28:$V2},{14:33,28:$V2},o($V0,[2,14]),o($V0,[2,10]),o($V0,[2,11])],
-defaultActions: {3:[2,1],24:[2,12],25:[2,13],27:[2,17],28:[2,21]},
+table: [o($V0,[2,2],{3:1,4:2}),{1:[3]},{5:[1,3],6:4,7:5,8:[1,6],9:[1,7],10:12,11:8,12:9,13:[1,10],15:[1,11],17:[1,13],23:$V1},{1:[2,1]},o($V0,[2,3]),o($V0,[2,4]),o($V0,[2,5]),{10:15,23:$V1},o($V0,[2,7]),o($V0,[2,8]),{14:16,30:$V2},{16:18,23:[1,19]},{22:20,24:21,26:[1,22],27:[1,23]},{18:24,19:[1,25],20:[1,26],21:[1,27]},o([5,8,9,13,15,17,23,26,27,30],[2,17]),o($V0,[2,6]),o($V0,[2,9]),o($V0,[2,24]),o($V0,[2,10]),o($V0,[2,16]),{10:28,23:$V1},{23:[2,19],25:29,28:[1,30],29:[1,31]},o($V3,[2,20]),o($V3,[2,21]),{10:32,23:$V1},{10:33,23:$V1},{23:[2,13]},{23:[2,14]},{14:34,30:$V2},{23:[2,18]},{23:[2,22]},{23:[2,23]},{14:35,30:$V2},{14:36,30:$V2},o($V0,[2,15]),o($V0,[2,11]),o($V0,[2,12])],
+defaultActions: {3:[2,1],26:[2,13],27:[2,14],29:[2,18],30:[2,22],31:[2,23]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -609,42 +612,46 @@ case 1:/* skip whitespace */
 break;
 case 2:/* skip comments */
 break;
-case 3:return 9;
+case 3:return 15;
 break;
-case 4:return 'PLACEMENT_LEFTOF';
+case 4:return 9;
 break;
-case 5:return 'PLACEMENT_RIGHTOF';
+case 5:return 'PLACEMENT_LEFTOF';
 break;
-case 6:return 'PLACEMENT_OVER';
+case 6:return 'PLACEMENT_RIGHTOF';
 break;
-case 7:return 15;
+case 7:return 'PLACEMENT_OVER';
 break;
-case 8: this.begin('title'); return 13; 
+case 8:return 17;
 break;
-case 9: this.popState(); return 28; 
+case 9: this.begin('title'); return 13; 
 break;
-case 10:return ',';
+case 10: this.popState(); return 30; 
 break;
-case 11:return 22;
+case 11:return ',';
 break;
-case 12:return 22;
+case 12:return 23;
 break;
-case 13:return 26;
+case 13:return 23;
 break;
-case 14:return 25;
+case 14:return 27;
 break;
-case 15:return 27;
+case 15:return 26;
 break;
 case 16:return 28;
 break;
-case 17:return 5;
+case 17:return 29;
 break;
-case 18:return 'INVALID';
+case 18:return 30;
+break;
+case 19:return 5;
+break;
+case 20:return 'INVALID';
 break;
 }
 },
-rules: [/^(?:[\r\n]+)/i,/^(?:\s+)/i,/^(?:#[^\r\n]*)/i,/^(?:participant\b)/i,/^(?:left of\b)/i,/^(?:right of\b)/i,/^(?:over\b)/i,/^(?:note\b)/i,/^(?:title\b)/i,/^(?:[^\r\n]+)/i,/^(?:,)/i,/^(?:[^\->:,\r\n"]+)/i,/^(?:"[^"]+")/i,/^(?:--)/i,/^(?:-)/i,/^(?:>)/i,/^(?:[^\r\n]+)/i,/^(?:$)/i,/^(?:.)/i],
-conditions: {"title":{"rules":[9],"inclusive":false},"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,10,11,12,13,14,15,16,17,18],"inclusive":true}}
+rules: [/^(?:[\r\n]+)/i,/^(?:\s+)/i,/^(?:#[^\r\n]*)/i,/^(?:destroy\b)/i,/^(?:participant\b)/i,/^(?:left of\b)/i,/^(?:right of\b)/i,/^(?:over\b)/i,/^(?:note\b)/i,/^(?:title\b)/i,/^(?:[^\r\n]+)/i,/^(?:,)/i,/^(?:[^\->:,\r\n"]+)/i,/^(?:"[^"]+")/i,/^(?:--)/i,/^(?:-)/i,/^(?:>\*)/i,/^(?:>)/i,/^(?:[^\r\n]+)/i,/^(?:$)/i,/^(?:.)/i],
+conditions: {"title":{"rules":[10],"inclusive":false},"INITIAL":{"rules":[0,1,2,3,4,5,6,7,8,9,11,12,13,14,15,16,17,18,19,20],"inclusive":true}}
 });
 return lexer;
 })();
@@ -656,4 +663,4 @@ Parser.prototype = parser;parser.Parser = Parser;
 Parser.prototype.parse = parser.parse;
 return new Parser;
 })();
- export default SequenceDiagram;
+export default SequenceDiagram;
