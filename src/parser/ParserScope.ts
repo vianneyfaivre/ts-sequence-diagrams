@@ -4,59 +4,62 @@ import {Signal} from "../model/Signal";
 export default class ParserScope {
 
     actors: Actor[];
-    actorsCreatedBySignal: Actor[];
     signals: Signal[];
 
     constructor() {
         this.actors = [];
-        this.actorsCreatedBySignal = [];
         this.signals = [];
     }
     
+    getOrCreate = function(name: string, createdBySignal: boolean) {
+        var actor = this.actors[name];
+        if(!actor) {
+            console.log(`Identified actor : ${name}`);
+            actor = new Actor(name, createdBySignal);
+            this.actors[name] = actor;
+        } 
+        return actor;
+    }
+    
     createSignal = function(actorA: string, signalType: string, actorB: string, message: string) {
-        console.log(`Creating signal : ${actorA.toString()} ${signalType} ${actorB.toString()} ${message}`);
+        console.log(`Parsed signal : ${actorA.toString()} ${signalType} ${actorB.toString()}`);
 
-        var actorA_ = new Actor(actorA);
-        var actorB_ = new Actor(actorB);
+        var actorA_ = this.actors[actorA];
+        var actorB_ = this.actors[actorB];
         var lineType = signalType.split('_')[0];
         var arrowType = signalType.split('_')[1];
 
-        const actorAAlreadyExists = this.actorsCreatedBySignal[actorA];
-        const actorBAlreadyExists = this.actorsCreatedBySignal[actorB];
-
+        // Actor creation by signal
         if(arrowType === ">*") { 
-            this.getOrCreate(actorA);
-            this.actorsCreatedBySignal[actorB] = actorB_;
-        } 
-        else if (actorAAlreadyExists === false && actorBAlreadyExists == false){
-            this.getOrCreate(actorA);
-            this.getOrCreate(actorB);
-        } 
 
-        return Signal.simple(actorA_, actorB_, lineType, arrowType, message);
+            if(!actorA_) {
+                actorA_ = this.getOrCreate(actorA, false);
+            }
+
+            if(!actorB_) {
+                actorB_ = this.getOrCreate(actorB, true);
+            }
+        } 
+        // Classic actor
+        else {
+            if(!actorA_) {
+                actorA_ = this.getOrCreate(actorA, false);
+            }
+
+            if(!actorB_) {
+                actorB_ = this.getOrCreate(actorB, false);
+            }
+        }
+
+        if(actorA_ !== null && actorB_ != null) {
+            return Signal.simple(actorA_, actorB_, lineType, arrowType, message);
+        } else {
+            console.error(`Unable to parse : ${actorA.toString()} ${signalType} ${actorB.toString()}`);
+        }
     }
 
     createNote = function(a: string, b: string, c: string) {
-        console.log(`Creating note : ${a} ${b} ${c}`);
-    }
-
-    createActor = function(name: string) {
-        console.log(`Create actor : ${name}`);
-        this.actors[name] = new Actor(name);
-        return this.actors[name];
-    }
-
-    getActor = function(name: string) {
-        console.log(`Get actor : ${name}`);
-        return this.actors[name];
-    }
-
-    getOrCreate = function(name: string) {
-        var actor = this.actors[name];
-        if(!actor) {
-            return this.createActor(name);
-        } 
-        return actor;
+        console.log(`Parsed note : ${a} ${b} ${c}`);
     }
 
     addSignal = function(signal: Signal) {
@@ -65,11 +68,23 @@ export default class ParserScope {
     }
 
     setTitle = function(title: string) {
-        console.log(`Setting title : ${title}`);
+        console.log(`Parsed title : ${title}`);
     }
 
     destroyActor = function(actor: string) {
-        console.log(`Destroying actor : ${actor}`);
-        this.signals.push(Signal.destroy(new Actor(name)));
+        console.log(`Identified actor to destroy : ${actor}`);
+
+        var actor_ = this.actors[actor];
+
+        if(actor_) {
+
+            if(actor_.createdBySignal === true) {
+                this.signals.push(Signal.destroy(actor_));
+            } else {
+                console.error(`Unable to destroy actor '${actor}' because it has not been created by a signal`);
+            }
+        } else {
+            console.error(`Unable to destroy actor '${actor}' because it does not exist`);
+        }
     }
 }

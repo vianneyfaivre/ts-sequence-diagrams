@@ -23,12 +23,15 @@ Features:
 Bugs:
 
 * trim messages
+* padding for root svg object
 
 Tech stuff:
 
 * Dependency injection http://inversify.io/
 * Move test code from index.ts to test/basic.html
 * Error handling
+  * use exceptions
+  * use error codes
 
 ## Build the grammar
 

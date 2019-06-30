@@ -24,14 +24,12 @@ const SIGNAL_CREATION_WIDTH = 100;
 export default class SvgEngine {
 
     actors: Snap.Element[];
-    actorsCreatedBySignal: Snap.Element[];
     shapesGenerator: ShapesGenerator;
 
     constructor(svgElementId: string) {
         var el = document.getElementById(svgElementId) as unknown as SVGElement;
         const paper = Snap(el);
         this.actors = [];
-        this.actorsCreatedBySignal = [];
         this.shapesGenerator = new ShapesGenerator(paper);
     }
 
@@ -74,21 +72,24 @@ export default class SvgEngine {
 
             var actor = actors[actorName];
 
-            var actorRect = this.drawActor(actor, offsetX, 0);
-            this.actors.push(actorRect);
-
-            offsetX += DISTANCE_BETWEEN_ACTORS;
+            if(actor.createdBySignal === false) {
+                var actorRect = this.drawActor(actor, offsetX, 0);
+                this.actors.push(actorRect);
+    
+                offsetX += DISTANCE_BETWEEN_ACTORS;
+            }
         }
     }
 
     drawActor(actor: Actor, x: number, y: number) {
 
-        console.log(`Drawing Actor ${actor.name}`);
+        console.log(`Drawing Actor '${actor.name}'`);
 
         // Draw rectangle
         var rect = this.shapesGenerator.drawRect(x, y, ACTOR_RECT_WIDTH, ACTOR_RECT_HEIGHT);
         rect.attr({
-            "actor-name": actor.name
+            "actor-name": actor.name, 
+            "actor-created-by-signal": `${actor.createdBySignal}`
         });
 
         // Draw text inside rectangle
@@ -113,7 +114,8 @@ export default class SvgEngine {
         // Draw rectangle
         var rect = this.shapesGenerator.drawRect(x, y, ACTOR_RECT_WIDTH, ACTOR_RECT_HEIGHT);
         rect.attr({
-            "actor-name": signal.actorB.name
+            "actor-name": signal.actorB.name, 
+            "actor-created-by-signal": `${signal.actorB.createdBySignal}`
         });
 
         // Draw text inside rectangle
@@ -130,15 +132,23 @@ export default class SvgEngine {
         return rect;
     }
 
+    _getActorElement(actor: Actor, createdBySignal: boolean) {
+        return this.actors.filter(a => {
+            const byName = a.attr("actor-name") === actor.name;
+            const type = a.attr("actor-created-by-signal") === `${createdBySignal}`;
+            return byName && type;
+        }).pop();
+    }
+
     _drawSignal(signal: Signal, offsetY: number) {
-        const rectActorA: Snap.Element = this.actors.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();
-        const rectActorB: Snap.Element = this.actors.filter(actor => actor.attr("actor-name") === signal.actorB.name).pop();
+        const rectActorA: Snap.Element = this._getActorElement(signal.actorA, false);
+        const rectActorB: Snap.Element = this._getActorElement(signal.actorB, false);
 
         const signalToSelf = signal.toSameActor();
         const classicActors = rectActorA && rectActorB;
 
-        const rectActorACreatedBySignal: Snap.Element = this.actorsCreatedBySignal.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();;
-        const rectActorBCreatedBySignal: Snap.Element = this.actorsCreatedBySignal.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();;
+        const rectActorACreatedBySignal: Snap.Element = this._getActorElement(signal.actorA, true);
+        const rectActorBCreatedBySignal: Snap.Element = this._getActorElement(signal.actorB, true);
 
         if(signalToSelf) {
             this._drawSelfSignal(signal, offsetY, rectActorA);
@@ -146,15 +156,17 @@ export default class SvgEngine {
         else if(classicActors) {
             this._drawSignalFromAToB(signal, rectActorA, rectActorB, offsetY);
         } 
+        else if(rectActorACreatedBySignal && rectActorBCreatedBySignal) {
+            this._drawSignalFromAToB(signal, rectActorACreatedBySignal, rectActorBCreatedBySignal, offsetY);
+        }
         else if(rectActorACreatedBySignal) {
             this._drawSignalFromAToB(signal, rectActorACreatedBySignal, rectActorB, offsetY);
-            console.log("TODO Actor A created by signal");
         }
         else if(rectActorBCreatedBySignal) {
-            console.log("TODO Actor B created by signal");
+            this._drawSignalFromAToB(signal, rectActorA, rectActorBCreatedBySignal, offsetY);
         }
         else {
-            console.error(`Could not draw ${signal}`);
+            console.error(`Can't draw ${signal}`);
         }
     }
 
@@ -239,13 +251,18 @@ export default class SvgEngine {
     }
 
     _drawSignalAndActor(signal: Signal, offsetY: number) {
-        const rectActorA = this.actors.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();
+        var rectActorA = this._getActorElement(signal.actorA, false);
         if(!rectActorA) {
-            console.log(`Can't draw signal because Actor A '${signal.actorA}' has not been drawn yet`);
-            return;
-        }
 
-        const rectActorB = this.actorsCreatedBySignal.filter(actor => actor.attr("actor-name") === signal.actorA.name).pop();
+            rectActorA = this._getActorElement(signal.actorA, true);
+
+            if(!rectActorA) {
+                console.log(`Can't draw signal because Actor A '${signal.actorA}' has not been drawn yet`);
+                return;
+            }
+        }
+        
+        const rectActorB = this._getActorElement(signal.actorB, true);
         if(rectActorB) {
             console.log(`Can't draw signal because Actor B '${signal.actorB}' has already been drawn`);
             return;
@@ -268,6 +285,6 @@ export default class SvgEngine {
         const rectX = signalBX;
         const rectY = signalY - (ACTOR_RECT_HEIGHT / 2);
         const actorB = this._drawActorCreatedBySignal(signal, rectX, rectY, offsetY);
-        this.actorsCreatedBySignal.push(actorB);
+        this.actors.push(actorB);
     }
 }
