@@ -6,8 +6,6 @@ import {ShapesGenerator, LineOption, TextOption} from "./ShapesGenerator";
 const DISTANCE_BETWEEN_SIGNALS = 50;
 const DISTANCE_BETWEEN_ACTORS = 200;
 
-const ACTOR_LINE_HEIGHT = 700;
-
 const ACTOR_RECT_WIDTH = 100;
 const ACTOR_RECT_HEIGHT = 50;
 
@@ -24,12 +22,14 @@ const SIGNAL_CREATION_WIDTH = 100;
 export default class SvgEngine {
 
     actors: Snap.Element[];
+    destroyedActors: Actor[];
     shapesGenerator: ShapesGenerator;
 
     constructor(svgElementId: string) {
         var el = document.getElementById(svgElementId) as unknown as SVGElement;
         const paper = Snap(el);
         this.actors = [];
+        this.destroyedActors = [];
         this.shapesGenerator = new ShapesGenerator(paper);
     }
 
@@ -54,6 +54,22 @@ export default class SvgEngine {
             else if(signal.type === SignalType.ACTOR_DELETION) {
                 this._destroyActor(signal, offsetY);
                 offsetY += DISTANCE_BETWEEN_SIGNALS;
+                this.destroyedActors.push(signal.actorA);
+            }
+        }
+
+        // Draw actors lines for those who has not been destroyed 
+        for(const i in this.actors) {
+            const actor = this.actors[i];
+            const actorName = actor.attr("actor-name");
+
+            const alreadyDestroyed = this.destroyedActors.filter(a => a.name === actorName).pop();
+
+            if(!alreadyDestroyed) {
+                const x = actor.getBBox().x + (ACTOR_RECT_WIDTH / 2);
+                const y1 = actor.getBBox().y + ACTOR_RECT_HEIGHT;
+                const y2 = offsetY;
+                this.shapesGenerator.drawLine(x, x, y1, y2);
             }
         }
     }
@@ -62,7 +78,7 @@ export default class SvgEngine {
 
         var offsetX = 0;
 
-        for (var actorName in actors) {
+        for (const actorName in actors) {
 
             var actor = actors[actorName];
 
@@ -90,13 +106,6 @@ export default class SvgEngine {
         var textX = (ACTOR_RECT_WIDTH / 2) + x;
         var textY = ACTOR_RECT_HEIGHT / 2;
         this.shapesGenerator.drawText(textX, textY, actor.name, [TextOption.CENTERED]);
-
-        // Draw actor line
-        var lineX = x + (ACTOR_RECT_WIDTH / 2);
-        var lineY1 = ACTOR_RECT_HEIGHT;
-        var lineY2 = ACTOR_RECT_HEIGHT + ACTOR_LINE_HEIGHT;
-
-        this.shapesGenerator.drawLine(lineX, lineX, lineY1, lineY2);
 
         return rect;
     }
@@ -289,9 +298,7 @@ export default class SvgEngine {
             // Draw actor line
             const x = actorElement.getBBox().x + (ACTOR_RECT_WIDTH / 2);
             const y1 = actorElement.getBBox().y + ACTOR_RECT_HEIGHT;
-
-            // TODO: retrieve the latest signal before getting destroyed and add DISTANCE_BETWEEN_SIGNALS/2
-            const y2 = y1 + offsetY;
+            const y2 = ACTOR_RECT_HEIGHT + offsetY;
 
             this.shapesGenerator.drawLine(x, x, y1, y2);
 
