@@ -52,16 +52,10 @@ export default class SvgEngine {
                 offsetY += DISTANCE_BETWEEN_SIGNALS + (ACTOR_RECT_HEIGHT / 2);
             }
             else if(signal.type === SignalType.ACTOR_DELETION) {
-                console.log("TODO Actor deletion");
-                // TODO have an array of temp lines (y1: set at ACTOR_CREATION, y2 set at ACTOR_DELETION)
+                this._destroyActor(signal, offsetY);
+                offsetY += DISTANCE_BETWEEN_SIGNALS;
             }
         }
-
-        console.log("TODO draw temp actor life lines");
-        // TODO for each temp line
-        //      y1 && y2 => draw line from y1 to y2, draw X
-        //      y1 && !y2 => draw line to the bottom
-        //      
     }
 
     drawActors(actors: Actor[]) {
@@ -122,12 +116,6 @@ export default class SvgEngine {
         var textX = (ACTOR_RECT_WIDTH / 2) + x;
         var textY = (ACTOR_RECT_HEIGHT / 2) + y;
         this.shapesGenerator.drawText(textX, textY, signal.actorB.name, [TextOption.CENTERED]);
-
-        // Draw actor line
-        var lineX = x + (ACTOR_RECT_WIDTH / 2);
-        var lineY1 = ACTOR_RECT_HEIGHT + y;
-        var lineY2 = ACTOR_LINE_HEIGHT + y - (ACTOR_RECT_HEIGHT / 2);
-        this.shapesGenerator.drawLine(lineX, lineX, lineY1, lineY2);
 
         return rect;
     }
@@ -286,5 +274,29 @@ export default class SvgEngine {
         const rectY = signalY - (ACTOR_RECT_HEIGHT / 2);
         const actorB = this._drawActorCreatedBySignal(signal, rectX, rectY, offsetY);
         this.actors.push(actorB);
+    }
+
+    _destroyActor(signal: Signal, offsetY: number) {
+        console.log(`Drawing line and cross for actor '${signal.actorA}'`);
+
+        var actorElement = this._getActorElement(signal.actorA, true);
+        if(!actorElement) {
+            actorElement = this._getActorElement(signal.actorA, false);
+        }
+
+        if(actorElement) {
+
+            // Draw actor line
+            const x = actorElement.getBBox().x + (ACTOR_RECT_WIDTH / 2);
+            const y1 = actorElement.getBBox().y + ACTOR_RECT_HEIGHT;
+
+            // TODO: retrieve the latest signal before getting destroyed and add DISTANCE_BETWEEN_SIGNALS/2
+            const y2 = y1 + offsetY;
+
+            this.shapesGenerator.drawLine(x, x, y1, y2);
+
+            // Draw cross
+            this.shapesGenerator.drawCross(x, y2);
+        }
     }
 }
