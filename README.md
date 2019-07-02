@@ -5,8 +5,8 @@
 Features:
 
 * Text boundaries
-* Notes
 * Loops
+* Notes
 * Handle incorrect inputs
 * Compute SVG size based on what has to be drawn
 * Participants order
@@ -26,6 +26,7 @@ Tech stuff:
   * use error codes
 * Export as a module
 * Automate the grammar build (use make)
+* use https://svgjs.com instead of snap
 
 ## Build the grammar
 

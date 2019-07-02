@@ -8,13 +8,13 @@
   },
   "scripts": {
     "build": "webpack --config webpack.config.js --parallel",
-    "watch": "webpack --watch"
+    "watch": "webpack --watch",
+    "start": "webpack --watch && webpack-dev-server"
   },
   "author": "Vianney FAIVRE",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "snapsvg": "^0.5.1",
-    "webpack": "^4.35.0"
+    "snapsvg": "^0.5.1"
   },
   "devDependencies": {
     "@types/snapsvg": "^0.5.0",
@@ -22,6 +22,7 @@
     "lex-parser": "^0.1.4",
     "ts-loader": "^6.0.4",
     "typescript": "^3.5.2",
+    "webpack": "^4.35.0",
     "webpack-cli": "^3.3.5",
     "webpack-dev-server": "^3.7.2"
   }
