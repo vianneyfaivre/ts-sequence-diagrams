@@ -11,14 +11,14 @@
         <script>
             var input = 
             `
-            Vianney->Server: GET /ping
-            Server->Backend: hey you
-            Backend-->Server: what?
-            Server->Backend: ping
-            Backend->Backend: process
-            Backend-->Server: pong
-            Server-->Vianney: pong
-            Vianney->Backend: shutdown
+            Vianney->*App: starting
+            App-->Vianney: started
+            Vianney->App: ping
+            App->*Backend: ping
+            Backend-->App: pong
+            destroy Backend
+            App-->Vianney: pong
+            destroy App
             `;
             var sequenceDiagram = new SequenceDiagram();
             sequenceDiagram.load(input);

@@ -5,20 +5,13 @@
 Features:
 
 * Text boundaries
-* Length of the actor line
-* Signal that creates an actor
-  * avoid having the same actor simple vs created by signal
-  * avoid having an actor trying to create itself
-  * cascading actor creation
-  * backward actor creation
-  * have a test/actor-creation.html
-* Signal that destroys an actor
 * Notes
 * Loops
 * Handle incorrect inputs
 * Compute SVG size based on what has to be drawn
 * Participants order
 * Diagram title
+* Draw on input/textarea change
 
 Bugs:
 
@@ -27,11 +20,12 @@ Bugs:
 
 Tech stuff:
 
-* Dependency injection http://inversify.io/
 * Move test code from index.ts to test/basic.html
 * Error handling
   * use exceptions
   * use error codes
+* Export as a module
+* Automate the grammar build (use make)
 
 ## Build the grammar
 

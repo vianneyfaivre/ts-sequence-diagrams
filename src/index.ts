@@ -2,37 +2,36 @@ import Parser from "./parser/Parser";
 import ParserScope from "./parser/ParserScope";
 import SvgEngine from "./draw/SvgEngine";
 
-console.log("** PARSING **")
+export default class SequenceDiagram {
 
-var parser = new Parser();
-// var data: ParserScope = parser.parse(`
-// Vianney->Server: GET /ping
-// Server->Backend: hey you
-// Backend-->Server: what?
-// Server->Backend: ping
-// Backend->Backend: process
-// Backend-->Server: pong
-// Server-->Vianney: pong
-// Vianney->Backend: shutdown
-// Vianney->*App: starting
-// App-->Vianney: started
-// destroy App
-// `);
+    parser: Parser;
+    data: ParserScope;
 
-var data: ParserScope = parser.parse(`
-Vianney->*App: starting
-App-->Vianney: started
-Vianney->App: ping
-App->*Backend: ping
-Backend-->App: pong
-destroy Backend
-App-->Vianney: pong
-destroy App
-`);
+    constructor() {
+        this.parser = new Parser();
+    }
 
-var svgEngine = new SvgEngine("diagram-container");
+    load(input: string) {
+        console.log("** PARSING **")
+        
+        const el = document.getElementById(input);
+        
+        if(el) {
+            this.data = this.parser.parse(el.innerHTML);
+        } else {
+            this.data = this.parser.parse(input)
+        }
 
-console.log("** DRAWING **");
+        this.parser = null;
+    }
 
-svgEngine.drawActors(data.actors);
-svgEngine.drawSignals(data.signals);
+    draw(htmlElementId: string) {
+        console.log("** DRAWING **");
+        const svgEngine = new SvgEngine(htmlElementId);
+        svgEngine.drawActors(this.data.actors);
+        svgEngine.drawSignals(this.data.signals);
+    }
+}
+
+// Export the main class in the window object
+(<any>globalThis).SequenceDiagram = SequenceDiagram;
