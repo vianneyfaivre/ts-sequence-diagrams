@@ -66,10 +66,22 @@ export default class SvgEngine {
             const alreadyDestroyed = this.destroyedActors.filter(a => a.name === actorName).pop();
 
             if(!alreadyDestroyed) {
-                const x = actor.getBBox().x + (ACTOR_RECT_WIDTH / 2);
-                const y1 = actor.getBBox().y + ACTOR_RECT_HEIGHT;
-                const y2 = offsetY;
-                this.shapesGenerator.drawLine(x, x, y1, y2);
+
+                // Draw whole line
+                const lineX = actor.getBBox().x + (ACTOR_RECT_WIDTH / 2);
+                const lineY1 = actor.getBBox().y + ACTOR_RECT_HEIGHT;
+                const lineY2 = offsetY + ACTOR_RECT_HEIGHT;
+                this.shapesGenerator.drawLine(lineX, lineX, lineY1, lineY2);
+
+                // Draw bottom actor rect
+                const rectX = lineX - (ACTOR_RECT_WIDTH / 2);
+                const rectY = lineY2;
+                var rect = this.shapesGenerator.drawRect(rectX, rectY, ACTOR_RECT_WIDTH, ACTOR_RECT_HEIGHT);
+
+                // Draw text inside rectangle
+                var textX = (ACTOR_RECT_WIDTH / 2) + rectX;
+                var textY = (ACTOR_RECT_HEIGHT / 2) + lineY2;
+                this.shapesGenerator.drawText(textX, textY, actorName, [TextOption.CENTERED]);
             }
         }
     }
