@@ -30,6 +30,7 @@ export default class SequenceDiagram {
         const svgEngine = new SvgEngine(htmlElementId);
         svgEngine.drawActors(this.data.actors);
         svgEngine.drawSignals(this.data.signals);
+        svgEngine.printCurrentState();
     }
 }
 

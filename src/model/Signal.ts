@@ -1,15 +1,5 @@
 import Actor from "./Actor";
-
-enum LineType {
-    REQUEST,
-    RESPONSE
-}
-
-enum SignalType {
-    SIMPLE,
-    ACTOR_CREATION,
-    ACTOR_DELETION
-}
+import { SignalType, LineType } from "../draw/model";
 
 class Signal {
     actorA: Actor;

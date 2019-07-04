@@ -28,6 +28,10 @@ Tech stuff:
 * Automate the grammar build (use make)
 * use https://svgjs.com instead of snap
 
+Test cases:
+
+* Actor creation in the middle of some classic actors
+
 ## Build the grammar
 
 ```
