@@ -1,7 +1,6 @@
 import { Signal } from "../model/Signal";
 import { SignalElement, ActorElement, LineType, ActorRect, SignalType } from "./model";
 import Actor from "../model/Actor";
-import * as Snap from 'snapsvg';
 import { ShapesGenerator, TextOption, LineOption } from "./ShapesGenerator";
 
 const ACTOR_RECT_WIDTH = 100;
@@ -25,8 +24,7 @@ export default class ItemsGenerator {
     shapesGenerator: ShapesGenerator;
 
     constructor(container: SVGElement) {
-        const paper = Snap(container);
-        this.shapesGenerator = new ShapesGenerator(paper);
+        this.shapesGenerator = new ShapesGenerator(container);
     }
     
     drawSignal(signal: Signal, offsetY: number,

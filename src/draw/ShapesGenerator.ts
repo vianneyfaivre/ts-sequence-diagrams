@@ -16,8 +16,8 @@ export class ShapesGenerator {
     
     paper: Snap.Paper;
 
-    constructor(paper: Snap.Paper) {
-        this.paper = paper;
+    constructor(container: SVGElement) {
+        this.paper = Snap(container);
     }
 
     drawLine(x1: number, x2: number, y1: number, y2: number, options?: LineOption[]) {
