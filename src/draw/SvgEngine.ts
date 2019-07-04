@@ -108,16 +108,16 @@ export default class SvgEngine {
 
     drawActors(actors: Actor[]) {
 
-        var offsetX = 0;
+        let offsetX = 0;
 
         for (const actorName in actors) {
 
-            var actor = actors[actorName];
+            const actor = actors[actorName];
 
             if(actor.createdBySignal === false) {
                 console.log(`Drawing Actor '${actor.name}'`);
-                var actorRect = this.itemsGenerator.drawActor(actor, offsetX, 0);
-                this.actors.push(actorRect);
+                const actorEl = this.itemsGenerator.drawActor(actor, offsetX, 0);
+                this.actors.push(actorEl);
     
                 offsetX += DISTANCE_BETWEEN_ACTORS;
             }
@@ -125,7 +125,27 @@ export default class SvgEngine {
     }
 
     printCurrentState() {
-        console.log("TODO");
+
+        console.log("* ACTORS CURRENTLY DRAWN");
+        for (const actorName in this.actors) {
+
+            const actorEl = this.actors[actorName];
+            console.log(actorEl.toString());
+        }
+
+        console.log("* ACTORS THAT HAVE BEEN DESTROYED");
+        for (const actorName in this.destroyedActors) {
+
+            const actorEl = this.destroyedActors[actorName];
+            console.log(actorEl.toString());
+        }
+
+        console.log("* SIGNALS CURRENTLY DRAWN");
+        for (const signalName in this.signals) {
+
+            const signalEl = this.signals[signalName];
+            console.log(signalEl.toString());
+        }
     }
 
     _getActorElement(actor: Actor, createdBySignal: boolean): ActorElement {

@@ -6,6 +6,7 @@ export default class SequenceDiagram {
 
     parser: Parser;
     data: ParserScope;
+    svgEngine: SvgEngine;
 
     constructor() {
         this.parser = new Parser();
@@ -27,10 +28,14 @@ export default class SequenceDiagram {
 
     draw(htmlElementId: string) {
         console.log("** DRAWING **");
-        const svgEngine = new SvgEngine(htmlElementId);
-        svgEngine.drawActors(this.data.actors);
-        svgEngine.drawSignals(this.data.signals);
-        svgEngine.printCurrentState();
+        this.svgEngine = new SvgEngine(htmlElementId);
+        this.svgEngine.drawActors(this.data.actors);
+        this.svgEngine.drawSignals(this.data.signals);
+    }
+
+    debug() {
+        console.log("** PRINTING STATE **");
+        this.svgEngine.printCurrentState();
     }
 }
 
