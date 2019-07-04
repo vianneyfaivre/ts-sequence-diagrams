@@ -17,27 +17,9 @@ const SIGNAL_TEXT_OFFSET_Y = 5;
 
 const SIGNAL_CREATION_WIDTH = 100;
 
-/*
-TODO:
-- faire remonter _getActorElement dans SVGEngine.ts
-- enlever l'utilisation de SVG "attr"
-- retourner des SignalElement et des ActorElement
-- Dans SVGEngine 
-    - il ne doit pas yavoir de reference a SNAP
-    - il doit y avoir la logique (+ les offsets) qui connecte les "groupes" d'éléments (ActorElement et SignalElement) entre eux   
-    - Renommer SVGEngine en un truc sans "SVG"
-
-Doc to put in README.md:
-- Dans SVGEngine 
-    - Generates the whole SequenceDiagram
-    - Error handling
-    - Logging
-- Dans ItemsGenerator
-    - Generates sequence diagrams items: Actor, Signal, Note, ...
-- Dans ShapesGenerator
-    - Generates basic items: rect, text, lines, ...
-*/
-
+/**
+ * Generates sequence diagrams items: Actor, Signal, Note, ...
+ */
 export default class ItemsGenerator {
 
     shapesGenerator: ShapesGenerator;

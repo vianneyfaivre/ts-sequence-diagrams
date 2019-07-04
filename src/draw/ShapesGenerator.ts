@@ -1,15 +1,18 @@
 import * as Snap from 'snapsvg';
 
-enum LineOption {
+export enum LineOption {
     END_MARKER,
     DOTTED
 }
 
-enum TextOption {
+export enum TextOption {
     CENTERED
 }
 
-class ShapesGenerator {
+/**
+ * Generates basic items: rect, text, lines, ...
+ */
+export class ShapesGenerator {
     
     paper: Snap.Paper;
 
@@ -85,5 +88,3 @@ class ShapesGenerator {
     }
 
 }
-
-export {LineOption, TextOption, ShapesGenerator};

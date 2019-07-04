@@ -6,6 +6,9 @@ import { ActorElement, SignalElement } from "./model";
 const DISTANCE_BETWEEN_SIGNALS = 50;
 const DISTANCE_BETWEEN_ACTORS = 200;
 
+/**
+ * Generates the whole Sequence Diagram, also it does error handling and logging
+ */
 export default class SvgEngine {
 
     itemsGenerator: ItemsGenerator;
