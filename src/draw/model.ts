@@ -8,6 +8,7 @@ export class ActorElement {
     readonly selfSignals: SignalElement[];
     bottomRect: ActorRect;
     line: Snap.Element;
+    destroyed: boolean;
 
     constructor(
         readonly actor: Actor,
@@ -16,6 +17,7 @@ export class ActorElement {
         this.incomingSignals = [];
         this.outgoingSignals = [];
         this.selfSignals = [];
+        this.destroyed = false;
     }
 
     toString() {
@@ -24,12 +26,7 @@ export class ActorElement {
             hasBottomRect = true;
         }
         
-        let hasLine = false;
-        if(this.line) {
-            hasLine = true;
-        }
-
-        return `Actor '${this.actor.name}'. Signals: outgoing=${this.outgoingSignals.length} incoming=${this.incomingSignals.length} self=${this.selfSignals.length}. bottomRect=${hasBottomRect}. line=${hasLine}`;
+        return `Actor '${this.actor.name}'. Signals: outgoing=${this.outgoingSignals.length} incoming=${this.incomingSignals.length} self=${this.selfSignals.length}. bottomRect=${hasBottomRect}. dies=${this.destroyed}`;
     }
 }
 
@@ -64,6 +61,16 @@ export class SignalElement {
         readonly actorA: ActorElement,
         readonly actorB: ActorElement
     ) {}
+
+    toString() {
+        const toSelf = this.actorA.actor.name === this.actorB.actor.name;
+        
+        if(toSelf === true) {
+            return `Self-Signal '${this.actorA.actor.name}': '${this.text.innerSVG()}'`;
+        } else {
+            return `Signal from '${this.actorA.actor.name}' to '${this.actorB.actor.name}': '${this.text.innerSVG()}'`;
+        }
+    }
 }
 
 export enum SignalDirection {

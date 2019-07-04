@@ -1,5 +1,5 @@
 import Actor from "../model/Actor";
-import { Signal, SignalType } from "../model/Signal";
+import { Signal, SignalType, LineType } from "../model/Signal";
 import ItemsGenerator from "./ItemsGenerator";
 import { ActorElement, SignalElement } from "./model";
 
@@ -43,12 +43,18 @@ export default class SvgEngine {
                     //TODO throw ex
                     console.error(`Can't draw ${signal}`);
                 }
+                else {
+                    // Update state
+                    this.signals.push(signalElement);
+                    this._updateActorElementSignals(signalElement, signal.toSameActor());
 
-                if(signal.toSameActor()) {
-                    offsetY += DISTANCE_BETWEEN_SIGNALS * 2;
-                } else {
-                    offsetY += DISTANCE_BETWEEN_SIGNALS;
+                    if(signal.toSameActor()) {
+                        offsetY += DISTANCE_BETWEEN_SIGNALS * 2;
+                    } else {
+                        offsetY += DISTANCE_BETWEEN_SIGNALS;
+                    }
                 }
+
             }
             else if(signal.type === SignalType.ACTOR_CREATION) {
 
@@ -73,10 +79,12 @@ export default class SvgEngine {
                     continue;
                 }
 
-                let [signalCreation, actorB] = this.itemsGenerator.drawSignalAndActor(signal, actorElA, offsetY);
+                let [signalElement, actorB] = this.itemsGenerator.drawSignalAndActor(signal, actorElA, offsetY);
 
+                // Update state
                 this.actors.push(actorB);
-                // TODO update ActorElement with signalCreation / signal
+                this.signals.push(signalElement);
+                this._updateActorElementSignals(signalElement);
 
                 offsetY += DISTANCE_BETWEEN_SIGNALS;
             }
@@ -89,8 +97,12 @@ export default class SvgEngine {
                 
                 if(actorElement) {
                     console.log(`Drawing destruction of actor '${signal.actorA}'`);
-                    this.itemsGenerator.destroyActor(actorElement, offsetY);
+
+                    const signalElement = this.itemsGenerator.destroyActor(actorElement, offsetY);
+                    
+                    // Update state
                     this.destroyedActors.push(signal.actorA);
+                    actorElement.destroyed = true;
                     offsetY += DISTANCE_BETWEEN_SIGNALS;
                 } else {
                     console.warn(`Can't draw destruction of actor '${signal.actorA}'`);
@@ -102,8 +114,6 @@ export default class SvgEngine {
 
         // Draw actors lines for those who has not been destroyed 
         this.itemsGenerator.drawActorLines(this.actors, this.destroyedActors, offsetY);
-
-        // TODO update ActorElement with signal
     }
 
     drawActors(actors: Actor[]) {
@@ -154,5 +164,30 @@ export default class SvgEngine {
             const type = a.actor.createdBySignal === createdBySignal;
             return byName && type;
         }).pop();
+    }
+
+    _updateActorElementSignals(signalElement: SignalElement, sameActor?: boolean): void {
+        
+        const actorElA = signalElement.actorA;
+        const actorElB = signalElement.actorB; 
+
+        // From A to A
+        if(sameActor === true) {
+            actorElA.selfSignals.push(signalElement);
+        }
+        // From A to B
+        else if(signalElement.lineType === LineType.REQUEST) {
+            console.log(actorElA.actor.name + " REQ "+actorElB.actor.name);
+            actorElA.outgoingSignals.push(signalElement);
+            actorElB.incomingSignals.push(signalElement);
+        } 
+        // From B to A
+        else if(signalElement.lineType === LineType.RESPONSE) {
+            console.log(actorElA.actor.name + " RESP "+actorElB.actor.name);
+            actorElA.outgoingSignals.push(signalElement);
+            actorElB.incomingSignals.push(signalElement);
+        } else {
+            console.warn(`Unknown line type '${signalElement.lineType}'`);
+        }
     }
 }

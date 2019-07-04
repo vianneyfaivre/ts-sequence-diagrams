@@ -20,13 +20,12 @@ Bugs:
 
 Tech stuff:
 
-* Move test code from index.ts to test/basic.html
 * Error handling
   * use exceptions
   * use error codes
-* Export as a module
 * Automate the grammar build (use make)
 * use https://svgjs.com instead of snap
+* silent logs
 
 Test cases:
 

@@ -75,8 +75,9 @@ export default class ItemsGenerator {
             const alreadyDestroyed = destroyedActors.filter(a => a.name === actorName).pop();
 
             if(!alreadyDestroyed) {
-                const line = this._drawActorLine(actorEl, actorName, offsetY);
+                const [line, actorBottomRect] = this._drawLivingActorLineAndRect(actorEl, actorName, offsetY);
                 actorEl.line = line;
+                actorEl.bottomRect = actorBottomRect;
             }
         }
     }
@@ -196,7 +197,7 @@ export default class ItemsGenerator {
         const cross =this.shapesGenerator.drawCross(x, y2);
     }
 
-    _drawActorLine(actorElement: ActorElement, actorName: string, offsetY: number): Snap.Element {
+    _drawLivingActorLineAndRect(actorElement: ActorElement, actorName: string, offsetY: number): [Snap.Element, ActorRect] {
         // Draw whole line
         const lineX = actorElement.topRect.rect.getBBox().x + (ACTOR_RECT_WIDTH / 2);
         const lineY1 = actorElement.topRect.rect.getBBox().y + ACTOR_RECT_HEIGHT;
@@ -206,13 +207,13 @@ export default class ItemsGenerator {
         // Draw bottom actor rect
         const rectX = lineX - (ACTOR_RECT_WIDTH / 2);
         const rectY = lineY2;
-        var rect = this.shapesGenerator.drawRect(rectX, rectY, ACTOR_RECT_WIDTH, ACTOR_RECT_HEIGHT);
+        const rect = this.shapesGenerator.drawRect(rectX, rectY, ACTOR_RECT_WIDTH, ACTOR_RECT_HEIGHT);
 
         // Draw text inside rectangle
-        var textX = (ACTOR_RECT_WIDTH / 2) + rectX;
-        var textY = (ACTOR_RECT_HEIGHT / 2) + lineY2;
-        this.shapesGenerator.drawText(textX, textY, actorName, [TextOption.CENTERED]);
+        const textX = (ACTOR_RECT_WIDTH / 2) + rectX;
+        const textY = (ACTOR_RECT_HEIGHT / 2) + lineY2;
+        const text = this.shapesGenerator.drawText(textX, textY, actorName, [TextOption.CENTERED]);
 
-        return line;
+        return [line, new ActorRect(rect, text)];
     }
 }
