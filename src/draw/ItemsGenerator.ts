@@ -149,7 +149,25 @@ export default class ItemsGenerator {
         console.log(`Moving actor '${actorAfter.actor.name}' ${offsetX}px to the right from actor '${actor.actor.name}'`);
 
         // Move actor
-        this._moveActor(actorAfter, offsetX);
+        const elementsToMove = [
+            actor.topRect.rect,
+            actor.topRect.text,
+            actor.line
+        ];
+
+        actor.selfSignals.forEach(selfSignal => {
+            elementsToMove.push(...selfSignal.lines);
+            elementsToMove.push(selfSignal.text);
+        });
+
+        if(actor.bottomRect) {
+            elementsToMove.push(actor.bottomRect.rect);
+            elementsToMove.push(actor.bottomRect.text);
+        }
+
+        this.shapesGenerator.translateElements(elementsToMove, offsetX);
+        
+
         // this._moveIncomingSignals(actor, offsetX);
         // this._moveOutgoingSignals(actor, offsetX);
         
@@ -198,29 +216,6 @@ export default class ItemsGenerator {
         //         this.shapesGenerator.translateElement(signal.text, offsetX);
         //     }
         // });
-    }
-
-    _moveActor(actorEl: ActorElement, offsetX: number): void {
-
-        // console.log(`Moving Actor '${actorEl.actor.name}' ${offsetX}px to the right`);
-
-        const elementsToMove = [
-            actorEl.topRect.rect,
-            actorEl.topRect.text,
-            actorEl.line
-        ];
-
-        actorEl.selfSignals.forEach(selfSignal => {
-            elementsToMove.push(...selfSignal.lines);
-            elementsToMove.push(selfSignal.text);
-        });
-
-        if(actorEl.bottomRect) {
-            elementsToMove.push(actorEl.bottomRect.rect);
-            elementsToMove.push(actorEl.bottomRect.text);
-        }
-
-        this.shapesGenerator.translateElements(elementsToMove, offsetX);
     }
 
     _moveIncomingSignals(actorEl: ActorElement, offsetX: number) : void {
