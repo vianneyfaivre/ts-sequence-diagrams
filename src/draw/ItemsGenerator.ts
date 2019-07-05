@@ -82,6 +82,81 @@ export default class ItemsGenerator {
         }
     }
 
+    moveActor(actorEl: ActorElement, actorToMoveElements: ActorElement[], offsetX: number): void {
+        console.log(`Actor to move '${actorEl.actor.name}', it implies to move ${actorToMoveElements.length} actors`);
+
+        this._moveActor(actorEl, offsetX);
+        this._moveIncomingSignals(actorEl, offsetX);
+        this._moveOutgoingSignals(actorEl, offsetX);
+
+        actorToMoveElements.forEach(el => {
+            this._moveActor(el, offsetX);
+        });
+
+    }
+
+    _moveActor(actorEl: ActorElement, offsetX: number): void {
+
+        console.log(`Moving Actor '${actorEl.actor.name}' ${offsetX}px to the right`);
+
+        const elementsToMove = [
+            actorEl.topRect.rect,
+            actorEl.topRect.text,
+            actorEl.line
+        ];
+
+        actorEl.selfSignals.forEach(selfSignal => {
+            elementsToMove.push(...selfSignal.lines);
+            elementsToMove.push(selfSignal.text);
+        });
+
+        if(actorEl.bottomRect) {
+            elementsToMove.push(actorEl.bottomRect.rect);
+            elementsToMove.push(actorEl.bottomRect.text);
+        }
+
+        this.shapesGenerator.translateElements(elementsToMove, offsetX);
+    }
+
+    _moveIncomingSignals(actorEl: ActorElement, offsetX: number) : void {
+        /*
+         * Extend Actor incoming signals
+         */
+        actorEl.incomingSignals.forEach(signalEl => {
+            if(signalEl.lineType === LineType.REQUEST) {
+                const x1 = signalEl.line.getBBox().x;
+                const x2 = signalEl.line.getBBox().x2 + offsetX;
+                this.shapesGenerator.extendElement(signalEl.line, x1, x2);
+            } 
+            else if(signalEl.lineType === LineType.RESPONSE) {
+                const x1 = signalEl.line.getBBox().x + offsetX;
+                const x2 = signalEl.line.getBBox().x2 + offsetX;
+                this.shapesGenerator.extendElement(signalEl.line, x1, x2);
+                this.shapesGenerator.translateElement(signalEl.text, offsetX);
+            }
+        });
+    }
+
+    _moveOutgoingSignals(actorEl: ActorElement, offsetX: number) : void {
+        /*
+         * Extend Actor outgoing signals
+         */
+        actorEl.outgoingSignals.forEach(signalEl => {
+            if(signalEl.lineType === LineType.REQUEST) {
+                const x1 = signalEl.line.getBBox().x + offsetX;
+                const x2 = signalEl.line.getBBox().x2 + offsetX;
+                this.shapesGenerator.extendElement(signalEl.line, x1, x2);
+                this.shapesGenerator.translateElement(signalEl.text, offsetX);
+            } 
+            else if(signalEl.lineType === LineType.RESPONSE) {
+                const x1 = signalEl.line.getBBox().x;
+                const x2 = signalEl.line.getBBox().x2 + offsetX;
+                this.shapesGenerator.extendElement(signalEl.line, x1, x2);
+                this.shapesGenerator.translateElement(signalEl.text, offsetX);
+            }
+        });
+    }
+
     _drawActorCreatedBySignal(signal: Signal, x: number, y: number, offsetY: number): ActorElement {
         // Draw rectangle
         const rect = this.shapesGenerator.drawRect(x, y, ACTOR_RECT_WIDTH, ACTOR_RECT_HEIGHT);
@@ -96,32 +171,51 @@ export default class ItemsGenerator {
 
     _drawSignalFromAToB(signal: Signal, actorElA: ActorElement, actorElB: ActorElement, offsetY: number): SignalElement {
 
-        // Draw Signal from actor A to actor B
-        const signalAX = (actorElA.topRect.rect.getBBox().width / 2) + actorElA.topRect.rect.getBBox().x;
-        const signalBX = (actorElB.topRect.rect.getBBox().width / 2) + actorElB.topRect.rect.getBBox().x;
-        const signalY = actorElA.topRect.rect.getBBox().h + offsetY;
+        // Determine whether the signal goes backward of forward
+        let signalGoingForward;
+
+        // Based on that, compute the line x1 and x2 to always have x1 < x2 (thus every line will start from the left and go to the right)
+        let lineX1;
+        let lineX2;
+        if(actorElA.topRect.rect.getBBox().x < actorElB.topRect.rect.getBBox().x) {
+            signalGoingForward = true;
+            lineX1 = (actorElA.topRect.rect.getBBox().width / 2) + actorElA.topRect.rect.getBBox().x;
+            lineX2 = (actorElB.topRect.rect.getBBox().width / 2) + actorElB.topRect.rect.getBBox().x;
+        } else {
+            signalGoingForward = false;
+            lineX1 = (actorElB.topRect.rect.getBBox().width / 2) + actorElB.topRect.rect.getBBox().x;
+            lineX2 = (actorElA.topRect.rect.getBBox().width / 2) + actorElA.topRect.rect.getBBox().x;
+        }
+
+        // Draw Signal line
+        const lineY = actorElA.topRect.rect.getBBox().h + offsetY;
         const dottedLine = signal.lineType === LineType.RESPONSE;
 
-        const options = [LineOption.END_MARKER];
+        const options = [];
+        
+        if(signalGoingForward) {
+            options.push(LineOption.END_MARKER);
+        } else {
+            options.push(LineOption.START_MARKER);
+        }
+
         if(dottedLine) {
             options.push(LineOption.DOTTED);
         }
 
-        const line = this.shapesGenerator.drawLine(signalAX, signalBX, signalY, signalY, options);
-
-        const signalGoingForward = (signalAX - signalBX) < 0;
+        const line = this.shapesGenerator.drawLine(lineX1, lineX2, lineY, lineY, options);
 
         if(signalGoingForward) {
-            // Draw text
-            const textX = signalAX + SIGNAL_TEXT_OFFSET_X;
-            const textY = signalY - SIGNAL_TEXT_OFFSET_Y;
+            // Draw Signal text
+            const textX = lineX1 + SIGNAL_TEXT_OFFSET_X;
+            const textY = lineY - SIGNAL_TEXT_OFFSET_Y;
             const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
             return SignalElement.forward(line, signal.lineType, signal.type, text, actorElA, actorElB);
         } else {
             // First, draw the text
-            let textX = signalAX - SIGNAL_TEXT_OFFSET_X;
-            const textY = signalY - SIGNAL_TEXT_OFFSET_Y;
+            let textX = lineX2 - SIGNAL_TEXT_OFFSET_X;
+            const textY = lineY - SIGNAL_TEXT_OFFSET_Y;
             let text = this.shapesGenerator.drawText(textX, textY, signal.message);
             
             // Get its width so it can be moved right

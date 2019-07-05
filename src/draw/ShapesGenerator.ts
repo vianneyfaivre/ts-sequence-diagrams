@@ -2,6 +2,7 @@ import * as Snap from 'snapsvg';
 
 export enum LineOption {
     END_MARKER,
+    START_MARKER,
     DOTTED
 }
 
@@ -15,9 +16,13 @@ export enum TextOption {
 export class ShapesGenerator {
     
     paper: Snap.Paper;
+    readonly endMarker: Snap.Element;
+    readonly startMarker: Snap.Element;
 
     constructor(container: SVGElement) {
         this.paper = Snap(container);
+        this.endMarker = this.paper.path('M 0 0   L 5 2.5   L 0 5   z').marker(0, 0, 5, 5, 5, 2.5);
+        this.startMarker = this.paper.path('M 0 2.5   L 5 5   L 5 0   z').marker(0, 0, 5, 5, 0, 2.5);
     }
 
     drawLine(x1: number, x2: number, y1: number, y2: number, options?: LineOption[]) {
@@ -29,9 +34,14 @@ export class ShapesGenerator {
         });
 
         if(options && options.includes(LineOption.END_MARKER)) {
-            const endMarker = this.paper.path('M 0 0 L 5 2.5 L 0 5 z').marker(0, 0, 5, 5, 5, 2.5);
             line.attr({
-                'markerEnd': endMarker
+                'markerEnd': this.endMarker
+            });
+        }
+
+        if(options && options.includes(LineOption.START_MARKER)) {
+            line.attr({
+                'markerStart': this.startMarker
             });
         }
 
@@ -85,6 +95,27 @@ export class ShapesGenerator {
             "stroke": "black",
             "stroke-width": 2
         });
+    }
+    
+    extendElement(element: Snap.Element, x1: number, x2: number) {
+        // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
+        element.attr(
+            {
+                "x1": x1,
+                "x2": x2
+        });
+    }
+
+    translateElements(elements: Snap.Element[], offsetX: number) {
+        // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
+        elements
+            .filter(element => element != null)
+            .forEach(element => this.translateElement(element, offsetX));
+    }
+
+    translateElement(element: Snap.Element, offsetX: number) {
+        const translationX = `translate(${offsetX},0)`;
+        element.transform(translationX);
     }
 
 }

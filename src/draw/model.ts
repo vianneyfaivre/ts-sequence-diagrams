@@ -20,7 +20,7 @@ export class ActorElement {
         this.destroyed = false;
     }
 
-    toString() {
+    toString(): String {
         let hasBottomRect = false;
         if(this.bottomRect) {
             hasBottomRect = true;

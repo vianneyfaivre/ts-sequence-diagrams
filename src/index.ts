@@ -31,6 +31,7 @@ export default class SequenceDiagram {
         this.svgEngine = new SvgEngine(htmlElementId);
         this.svgEngine.drawActors(this.data.actors);
         this.svgEngine.drawSignals(this.data.signals);
+        this.svgEngine.autoAdjust();
     }
 
     debug() {

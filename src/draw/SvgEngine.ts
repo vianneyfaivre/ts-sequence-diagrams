@@ -124,6 +124,7 @@ export default class SvgEngine {
 
             const actor = actors[actorName];
 
+            // Actors created by a signal will be drawn when the signal is being drawn
             if(actor.createdBySignal === false) {
                 console.log(`Drawing Actor '${actor.name}'`);
                 const actorEl = this.itemsGenerator.drawActor(actor, offsetX, 0);
@@ -132,6 +133,23 @@ export default class SvgEngine {
                 offsetX += DISTANCE_BETWEEN_ACTORS;
             }
         }
+    }
+
+    autoAdjust() {
+
+        // Adjust actors
+        for (const i in this.actors) {
+            const actorEl = this.actors[i];
+
+            // TODO write condition (signal text too long, actor rect text too long (x2))
+            if(actorEl.actor.name === 'Server') {
+                const actorToMoveElements = this.actors.slice(+i+1, this.actors.length);
+                this.itemsGenerator.moveActor(actorEl, actorToMoveElements, 100);
+            }
+        }
+
+        // TODO Adjust the SVG container size
+        // TODO set svg view box https://vanseodesign.com/web-design/svg-viewbox/
     }
 
     printCurrentState() {

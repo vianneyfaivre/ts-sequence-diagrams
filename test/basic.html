@@ -17,7 +17,9 @@
             Server->Backend: ping
             Backend->Backend: process
             Backend-->Server: pong
+            Server->Server: process
             Server-->Vianney: pong
+            Vianney->Vianney: process
             Vianney->Backend: shutdown
             `;
             var sequenceDiagram = new SequenceDiagram();
