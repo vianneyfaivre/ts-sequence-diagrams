@@ -137,14 +137,18 @@ export default class SvgEngine {
 
     autoAdjust() {
 
-        // Adjust actors
+        // Adjust actors 
+
+        // It's a progressive adjustment, starting from the left and going to the right
+        // Any element which have a signal-text or a actor-rect-text too long will be shifted to the right
         for (const i in this.actors) {
             const actorEl = this.actors[i];
 
             // TODO write condition (signal text too long, actor rect text too long (x2))
             if(actorEl.actor.name === 'Server') {
-                const actorToMoveElements = this.actors.slice(+i+1, this.actors.length);
-                this.itemsGenerator.moveActor(actorEl, actorToMoveElements, 100);
+                const actorBefore = this.actors.slice(0, +i);
+                const actorAfter = this.actors.slice(+i+1, this.actors.length);
+                this.itemsGenerator.moveActor(actorEl, actorBefore, actorAfter, 100);
             }
         }
 
@@ -195,13 +199,11 @@ export default class SvgEngine {
         }
         // From A to B
         else if(signalElement.lineType === LineType.REQUEST) {
-            console.log(actorElA.actor.name + " REQ "+actorElB.actor.name);
             actorElA.outgoingSignals.push(signalElement);
             actorElB.incomingSignals.push(signalElement);
         } 
         // From B to A
         else if(signalElement.lineType === LineType.RESPONSE) {
-            console.log(actorElA.actor.name + " RESP "+actorElB.actor.name);
             actorElA.outgoingSignals.push(signalElement);
             actorElB.incomingSignals.push(signalElement);
         } else {

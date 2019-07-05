@@ -21,11 +21,12 @@
             Server-->Vianney: pong
             Vianney->Vianney: process
             Vianney->Backend: shutdown
+            Backend-->Vianney: zzzz
             `;
             var sequenceDiagram = new SequenceDiagram();
             sequenceDiagram.load(input);
             sequenceDiagram.draw("diagram-container");
-            sequenceDiagram.debug();
+            //sequenceDiagram.debug();
         </script>
     </body>
 </html>

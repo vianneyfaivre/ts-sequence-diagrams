@@ -82,17 +82,52 @@ export default class ItemsGenerator {
         }
     }
 
-    moveActor(actorEl: ActorElement, actorToMoveElements: ActorElement[], offsetX: number): void {
-        console.log(`Actor to move '${actorEl.actor.name}', it implies to move ${actorToMoveElements.length} actors`);
+    moveActor(actor: ActorElement, actorsBefore: ActorElement[], actorsAfter: ActorElement[], offsetX: number): void {
+        console.log(`Actor to move '${actor.actor.name}', with ${actorsBefore.length} before actors and ${actorsAfter.length} after actors`);
 
-        this._moveActor(actorEl, offsetX);
-        this._moveIncomingSignals(actorEl, offsetX);
-        this._moveOutgoingSignals(actorEl, offsetX);
-
-        actorToMoveElements.forEach(el => {
-            this._moveActor(el, offsetX);
+        // Move actor
+        this._moveActor(actor, offsetX);
+        this._moveIncomingSignals(actor, offsetX);
+        this._moveOutgoingSignals(actor, offsetX);
+        
+        // Move actors-after
+        actorsAfter.forEach(actorAfter => {
+            this._moveActor(actorAfter, offsetX);
         });
 
+        // signals from actors-before that have signals that goes to actors-after but not to actor
+        const signalsToExtend: SignalElement[] = []; 
+        actorsBefore.forEach(actorBefore => {
+
+            console.log(`Actor Bypass Before - ${actorBefore.actor.name}`);
+
+            actorBefore.incomingSignals.filter(inSignal => {
+
+                if(inSignal.actorA.actor.name !== actor.actor.name) {
+                    signalsToExtend.push(inSignal);
+                }
+            });
+
+            actorBefore.outgoingSignals.filter(inSignal => {
+
+                if(inSignal.actorB.actor.name !== actor.actor.name) {
+                    signalsToExtend.push(inSignal);
+                }
+            });
+        });
+
+        signalsToExtend.forEach(signal => {
+
+            // Extend line
+            const x1 = signal.line.getBBox().x;
+            const x2 = signal.line.getBBox().x2 + offsetX;
+            this.shapesGenerator.extendElement(signal.line, x1, x2);
+
+            // Move text of incoming signals to the actorA line
+            if(signal.lineType === LineType.RESPONSE) {
+                this.shapesGenerator.translateElement(signal.text, offsetX);
+            }
+        });
     }
 
     _moveActor(actorEl: ActorElement, offsetX: number): void {
