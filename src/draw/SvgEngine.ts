@@ -137,19 +137,64 @@ export default class SvgEngine {
 
     autoAdjust() {
 
-        // Adjust actors 
+        console.log("** AUTO_ADJUSTING **");
 
-        // It's a progressive adjustment, starting from the left and going to the right
-        // Any element which have a signal-text or a actor-rect-text too long will be shifted to the right
+        // a. Adjust actor top/bottom rectangles
+        console.log("* RESIZING ACTOR RECTANGLES *");
         for (const i in this.actors) {
             const actorEl = this.actors[i];
 
-            // TODO write condition (signal text too long, actor rect text too long (x2))
-            if(actorEl.actor.name === 'Server') {
-                const actorBefore = this.actors.slice(0, +i);
-                const actorAfter = this.actors.slice(+i+1, this.actors.length);
-                this.itemsGenerator.moveActor(actorEl, actorBefore, actorAfter, 100);
+            const actorToResize = this.itemsGenerator.shouldResizeActor(actorEl);
+            if(actorToResize === true) {
+                this.itemsGenerator.resizeActor(actorEl);
             }
+        }
+
+        // b. Adjust space between actors
+        console.log("* ADJUSTING SPACE BETWEEN ACTORS *");
+        for (const i in this.actors) {
+            const actorEl = this.actors[i];
+            const nextActor = this.actors[+i+1];
+
+            const [actorsToMove, offsetX] = this.itemsGenerator.shouldMoveActor(actorEl, nextActor, DISTANCE_BETWEEN_ACTORS);
+            if(actorsToMove === true) {
+                this.itemsGenerator.moveActor(actorEl, nextActor, offsetX);
+            }
+        }
+
+        for (const i in this.actors) {
+            const actorEl = this.actors[i];
+
+            // Check actor elements
+            // const actorToResize = this.itemsGenerator.shouldResizeActor(actorEl);
+            // if(actorToResize === true) {
+            //     const actorsBefore = this.actors.slice(0, +i);
+            //     const actorsAfter = this.actors.slice(+i+1, this.actors.length);
+                
+                // TODO: 
+                //     - reajuster les acteurs (top et bottom rectangles)
+                //     - ré-espacer les acteurs
+                //     - rallonger les signaux quand le texte est plus long que les trois quarts de la line.width 
+                //         - penser a décaler tous les prochains acteurs dans ce cas la
+                //             - offset = new line width - old width
+                //     - replacer si besoin les acteurs
+                //     - replacer les signaux  
+                //         - signal x1 == actor a . x 
+                //         - signal x2 == actor b . x 
+
+                // this.itemsGenerator.resizeActor(actorEl);
+
+                // this.itemsGenerator.moveActor(actorEl, actorBefore, actorAfter, newRectWidth);
+            // }
+
+            // Check signal elements
+
+            // TODO write condition (signal text too long, actor rect text too long (x2))
+            // if(actorEl.actor.name === 'Server') {
+            //     const actorBefore = this.actors.slice(0, +i);
+            //     const actorAfter = this.actors.slice(+i+1, this.actors.length);
+            //     this.itemsGenerator.moveActor(actorEl, actorBefore, actorAfter, 100);
+            // }
         }
 
         // TODO Adjust the SVG container size

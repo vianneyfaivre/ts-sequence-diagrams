@@ -5,6 +5,7 @@ import { ShapesGenerator, TextOption, LineOption } from "./ShapesGenerator";
 
 const ACTOR_RECT_WIDTH = 100;
 const ACTOR_RECT_HEIGHT = 50;
+const ACTOR_RECT_MIN_X_PADDING = 5;
 
 const SIGNAL_SELF_WIDTH = 25;
 const SIGNAL_SELF_HEIGHT = 50;
@@ -82,57 +83,126 @@ export default class ItemsGenerator {
         }
     }
 
-    moveActor(actor: ActorElement, actorsBefore: ActorElement[], actorsAfter: ActorElement[], offsetX: number): void {
-        console.log(`Actor to move '${actor.actor.name}', with ${actorsBefore.length} before actors and ${actorsAfter.length} after actors`);
+    shouldResizeActor(actor: ActorElement): boolean {
+        const resize = actor.topRect.shouldBeResized();
+        if(resize === true) {
+            return true;
+        }
+        return false;
+    }
+
+    resizeActor(actor: ActorElement): void {
+
+        const rectWidth = actor.topRect.text.getBBox().width + (ACTOR_RECT_MIN_X_PADDING * 2); 
+        const lineX = (rectWidth / 2) + actor.topRect.rect.getBBox().x;
+
+        console.log(`Resizing actor rectangles ${actor.actor.name} to ${rectWidth} and moving line to x=${lineX}`);
+
+        actor.move(lineX, rectWidth);
+    }
+
+    shouldMoveActor(actor: ActorElement, nextActor: ActorElement, defaultDistanceBetweenActors: number): [boolean, number] {
+        if(!nextActor) {
+            return [false, 0];
+        } else {
+
+            const rectDefaultSized = (actor.topRect.rect.getBBox().width === ACTOR_RECT_WIDTH) && (nextActor.topRect.rect.getBBox().width === ACTOR_RECT_WIDTH);
+            const actorDefaultDistanced = (nextActor.line.getBBox().x - actor.line.getBBox().x) === defaultDistanceBetweenActors;
+            
+            if(rectDefaultSized === true && actorDefaultDistanced === true) {
+                return [false, 0];
+            }
+
+            const defaultDistanceBetweenRect = defaultDistanceBetweenActors - ACTOR_RECT_WIDTH;
+
+            const actorRightX = actor.topRect.rect.getBBox().x + actor.topRect.rect.getBBox().width;
+            const nextActorLeftX = nextActor.topRect.rect.getBBox().x;
+
+            const distance = nextActorLeftX - actorRightX;
+
+            if(distance === 0) {
+                return [false, 0];
+            } 
+            else if(distance === defaultDistanceBetweenRect) {
+                return [false, 0];
+            }
+            else if(distance < 0) {
+                const offsetX = actorRightX + defaultDistanceBetweenActors;
+                console.log(`Distance between ${actor.actor.name} and ${nextActor.actor.name} is ${distance}px, ${nextActor.actor.name} should be moved ${offsetX}px to the right`);
+                return [true, offsetX];
+            } else {
+                const rectAWidth = actor.topRect.rect.getBBox().width;
+                const rectBWidth = nextActor.topRect.rect.getBBox().width; 
+                const rectAX = actor.topRect.rect.getBBox().x;
+                const rectBX = nextActor.topRect.rect.getBBox().x;
+
+                const distAB = (rectBX + rectBWidth/2) - (rectAX + rectAWidth/2);
+                const offsetX = distAB - rectAWidth/2 - rectBWidth/2;
+
+                console.log(`Distance between ${actor.actor.name} and ${nextActor.actor.name} is ${distance}px, ${nextActor.actor.name} should be moved ${offsetX}px to the right`);
+                return [true, offsetX];
+            }
+        }
+    }
+
+    moveActor(actor: ActorElement, actorAfter: ActorElement, offsetX: number): void {
+        console.log(`Moving actor '${actorAfter.actor.name}' ${offsetX}px to the right from actor '${actor.actor.name}'`);
 
         // Move actor
-        this._moveActor(actor, offsetX);
-        this._moveIncomingSignals(actor, offsetX);
-        this._moveOutgoingSignals(actor, offsetX);
+        this._moveActor(actorAfter, offsetX);
+        // this._moveIncomingSignals(actor, offsetX);
+        // this._moveOutgoingSignals(actor, offsetX);
         
         // Move actors-after
-        actorsAfter.forEach(actorAfter => {
-            this._moveActor(actorAfter, offsetX);
-        });
+        // actorsAfter.forEach(actorAfter => {
+        //     const actorAfterOffsetX = offsetX + actor.topRect.rect.getBBox().width;
+        //     this._moveActor(actorAfter, actorAfterOffsetX);
+        // });
+
+        // Move actors-before
 
         // signals from actors-before that have signals that goes to actors-after but not to actor
-        const signalsToExtend: SignalElement[] = []; 
-        actorsBefore.forEach(actorBefore => {
+        // const signalsToExtend: SignalElement[] = []; 
+        // actorsBefore.forEach(actorBefore => {
 
-            console.log(`Actor Bypass Before - ${actorBefore.actor.name}`);
+        //     // Get each incoming signal when the Actor A is not the "main" actor 
+        //     // A  Z  B
+        //     // A <-- B
+        //     actorBefore.incomingSignals.filter(inSignal => {
+        //         if(inSignal.actorA.actor.name !== actor.actor.name) {
+        //             signalsToExtend.push(inSignal);
+        //         }
+        //     });
 
-            actorBefore.incomingSignals.filter(inSignal => {
+        //     // Get each outgoing signal when the Actor B is not the "main" actor 
+        //     // A  Z  B
+        //     // A --> B
+        //     actorBefore.outgoingSignals.filter(inSignal => {
+        //         if(inSignal.actorB.actor.name !== actor.actor.name) {
+        //             signalsToExtend.push(inSignal);
+        //         }
+        //     });
+        // });
 
-                if(inSignal.actorA.actor.name !== actor.actor.name) {
-                    signalsToExtend.push(inSignal);
-                }
-            });
+        // signalsToExtend.forEach(signal => {
 
-            actorBefore.outgoingSignals.filter(inSignal => {
+        //     console.log(`Extending signal ${signal.toString()}`);
 
-                if(inSignal.actorB.actor.name !== actor.actor.name) {
-                    signalsToExtend.push(inSignal);
-                }
-            });
-        });
+        //     // Extend line
+        //     const x1 = signal.line.getBBox().x;
+        //     const x2 = signal.line.getBBox().x2 + offsetX;
+        //     this.shapesGenerator.extendElement(signal.line, x1, x2);
 
-        signalsToExtend.forEach(signal => {
-
-            // Extend line
-            const x1 = signal.line.getBBox().x;
-            const x2 = signal.line.getBBox().x2 + offsetX;
-            this.shapesGenerator.extendElement(signal.line, x1, x2);
-
-            // Move text of incoming signals to the actorA line
-            if(signal.lineType === LineType.RESPONSE) {
-                this.shapesGenerator.translateElement(signal.text, offsetX);
-            }
-        });
+        //     // Move text of incoming signals to the actorA line
+        //     if(signal.lineType === LineType.RESPONSE) {
+        //         this.shapesGenerator.translateElement(signal.text, offsetX);
+        //     }
+        // });
     }
 
     _moveActor(actorEl: ActorElement, offsetX: number): void {
 
-        console.log(`Moving Actor '${actorEl.actor.name}' ${offsetX}px to the right`);
+        // console.log(`Moving Actor '${actorEl.actor.name}' ${offsetX}px to the right`);
 
         const elementsToMove = [
             actorEl.topRect.rect,

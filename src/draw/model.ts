@@ -20,6 +20,31 @@ export class ActorElement {
         this.destroyed = false;
     }
 
+    move(lineX: number, rectWidth: number): void {
+        this.topRect.rect.attr({
+            "width": rectWidth
+        });
+
+        this.topRect.text.attr({
+            "x": lineX
+        });
+
+        this.line.attr({
+            "x1": lineX,
+            "x2": lineX
+        });
+
+        if(this.bottomRect) {
+            this.bottomRect.rect.attr({
+                "width": rectWidth
+            });
+
+            this.bottomRect.text.attr({
+                "x": lineX
+            });
+        }
+    }
+
     toString(): String {
         let hasBottomRect = false;
         if(this.bottomRect) {
@@ -36,6 +61,10 @@ export class ActorRect {
         readonly rect: Snap.Element, 
         readonly text: Snap.Element
     ) {}
+
+    shouldBeResized() : boolean {
+        return this.text.getBBox().width >= this.rect.getBBox().width;
+    }
 }
 
 export class SignalElement {
