@@ -114,7 +114,25 @@ export class ShapesGenerator {
     }
 
     translateElement(element: Snap.Element, offsetX: number) {
-        const translationX = `translate(${offsetX},0)`;
+
+        let fullOffsetX = offsetX;
+
+        // This hack is a dirty way to have multiple x-translations...  
+        // Keep in mind that adding more transformations elsewhere might break the entire offset mechanism
+        const existingTransformation = element.transform();
+
+        if(existingTransformation) {
+            // retrieve the existing X offset in the transformation "tx,y"
+            const parts = existingTransformation.toString().split(",");
+            if(parts.length > 0 && parts[0].startsWith("t") && parts[0].length > 1) {
+                const existingOffsetX = +parts[0].substring(1, parts[0].length);
+                if(existingOffsetX > 0) {
+                    fullOffsetX += existingOffsetX;
+                }
+            }
+        }
+
+        const translationX = `translate(${fullOffsetX},0)`;
         element.transform(translationX);
     }
 

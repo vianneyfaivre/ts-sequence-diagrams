@@ -1,6 +1,6 @@
 import Actor from "../model/Actor";
 import { Signal, SignalType, LineType } from "../model/Signal";
-import ItemsGenerator from "./ItemsGenerator";
+import ItemsGenerator, { ACTOR_RECT_MIN_X_PADDING } from "./ItemsGenerator";
 import { ActorElement, SignalElement } from "./model";
 
 const DISTANCE_BETWEEN_SIGNALS = 50;
@@ -135,14 +135,134 @@ export default class SvgEngine {
         }
     }
 
+    adjustSignals(actorsSorted: ActorElement[], nextActors: ActorElement[], actor: ActorElement, i: number) {
+        const actorSignals = [
+            ...actor.selfSignals,
+            ...actor.incomingSignals,
+            ...actor.outgoingSignals
+        ];
+
+        // TODO put as fn parameters
+        const beforeActor = actorsSorted[+i-1];
+        const nextActor = actorsSorted[+i+1];
+
+        // Move actors
+        for(const j in actorSignals) {
+            const signal = actorSignals[j];
+
+            // if(beforeActor){
+            //     const [shouldMove, offsetX] = this.itemsGenerator.isSignalTextTooLong(signal, beforeActor);
+            //     if(shouldMove === true) {
+            //         console.log("SHOULD MOVE BEFORE");
+            //         // TODO : move the actor before and all next actors
+            //     }
+            // }
+
+            if(nextActor){
+                const [shouldMove, offsetX] = this.itemsGenerator.isSignalTextTooLong(signal, nextActor);
+                if(shouldMove === true) {
+                    nextActors.forEach(a => this.itemsGenerator.moveActor(a, offsetX));
+                }
+            }
+
+            this._updateSignals(actor);
+        }
+
+        // this._updateSignals(actor);
+    }
+
+    _updateSignals(actor: ActorElement): void {
+        const inoutSignals = [
+            ...actor.incomingSignals,
+            ...actor.outgoingSignals
+        ];
+
+        // Redraw signals start and end
+        for(const j in inoutSignals) {
+            const signal = inoutSignals[j];
+
+            if(signal.signalType === SignalType.SIMPLE) {
+                
+                if(signal.lineType === LineType.REQUEST) {
+
+                    const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== signal.line.getBBox().x) 
+                                            || (signal.actorB.line.getBBox().x !== signal.line.getBBox().x2) 
+
+                    if(shouldBeAdjusted === true) {
+                        // console.log(`Adjusting request signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
+    
+                        signal.line.attr({
+                            "x1": signal.actorA.line.getBBox().x,
+                            "x2": signal.actorB.line.getBBox().x
+                        });
+    
+                        signal.text.attr({
+                            "x": ACTOR_RECT_MIN_X_PADDING + signal.actorA.line.getBBox().x
+                        });
+                    }
+                } 
+                else if(signal.lineType === LineType.RESPONSE){
+                    const shouldBeAdjusted = (signal.actorB.line.getBBox().x !== signal.line.getBBox().x) 
+                                             || (signal.actorA.line.getBBox().x !== signal.line.getBBox().x2) 
+
+                    if(shouldBeAdjusted === true) {
+                        // console.log(`Adjusting response signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
+    
+                        signal.line.attr({
+                            "x1": signal.actorB.line.getBBox().x,
+                            "x2": signal.actorA.line.getBBox().x
+                        });
+    
+                        const textX = signal.line.getBBox().x2 - signal.text.getBBox().width - ACTOR_RECT_MIN_X_PADDING;
+    
+                        signal.text.attr({
+                            "x": textX
+                        });
+                    }
+                }
+            } 
+            else if (signal.signalType === SignalType.ACTOR_CREATION) {
+
+                const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== signal.line.getBBox().x) 
+                                      || (signal.actorB.topRect.rect.getBBox().x !== signal.line.getBBox().x2) 
+
+                if(shouldBeAdjusted === true) {
+                    // console.log(`Adjusting creation signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
+
+                    signal.line.attr({
+                        "x1": signal.actorA.line.getBBox().x,
+                        "x2": signal.actorB.topRect.rect.getBBox().x
+                    });
+    
+                    signal.text.attr({
+                        "x": ACTOR_RECT_MIN_X_PADDING + signal.actorA.line.getBBox().x
+                    });
+                }
+                
+            }
+        }
+    }
+
     autoAdjust() {
 
         console.log("** AUTO_ADJUSTING **");
 
-        // a. Adjust actor top/bottom rectangles
+        // a. Reorder actors 
+        const actorsSorted = this.actors.sort((e1, e2) => {
+            return e1.line.getBBox().x - e2.line.getBBox().x;
+        });
+        
+        let allActors = '';
+        for (const i in actorsSorted) {
+            const actorEl = actorsSorted[i];
+            allActors += `${actorEl.actor.name}, `;
+        }
+        console.log(`Actors: ${allActors}`);
+
+        // b. Adjust actor top/bottom rectangles
         console.log("* RESIZING ACTOR RECTANGLES *");
-        for (const i in this.actors) {
-            const actorEl = this.actors[i];
+        for (const i in actorsSorted) {
+            const actorEl = actorsSorted[i];
 
             const actorToResize = this.itemsGenerator.shouldResizeActor(actorEl);
             if(actorToResize === true) {
@@ -150,20 +270,39 @@ export default class SvgEngine {
             }
         }
 
-        // b. Adjust space between actors
+        // c. Adjust space between actors
         console.log("* ADJUSTING SPACE BETWEEN ACTORS *");
-        for (const i in this.actors) {
-            const actorEl = this.actors[i];
-            const nextActor = this.actors[+i+1];
+        for (const i in actorsSorted) {
+            const actorEl = actorsSorted[i];
+            const nextActor = actorsSorted[+i+1];
 
-            const [actorsToMove, offsetX] = this.itemsGenerator.shouldMoveActor(actorEl, nextActor, DISTANCE_BETWEEN_ACTORS);
-            if(actorsToMove === true) {
-                this.itemsGenerator.moveActor(actorEl, nextActor, offsetX);
+            const [shouldMove, offsetX] = this.itemsGenerator.shouldMoveActor(actorEl, nextActor, DISTANCE_BETWEEN_ACTORS);
+            if(shouldMove === true) {
+                this.itemsGenerator.moveActor(nextActor, offsetX);
             }
         }
 
-        for (const i in this.actors) {
-            const actorEl = this.actors[i];
+        // d. Adjust space between actors if text is too long
+        console.log("* ADJUSTING BASED ON SIGNAL TEXT WIDTH *");
+        for (const i in actorsSorted) {
+
+            const actorEl = actorsSorted[i];
+            const nextActors = actorsSorted.slice(+i+1);
+
+            // if(!nextActors || nextActors.length === 0) {
+            //     break;
+            // }
+
+            console.log(`* ADJUSTING ACTOR ${actorEl.actor.name} SIGNALS*`);
+
+            this.adjustSignals(actorsSorted, nextActors, actorEl, +i);
+        }
+
+        // e. Redraw signals
+        // console.log("* REDRAWING SIGNALS *");
+
+        // for (const i in this.actors) {
+        //     const actorEl = this.actors[i];
 
             // Check actor elements
             // const actorToResize = this.itemsGenerator.shouldResizeActor(actorEl);
@@ -195,7 +334,7 @@ export default class SvgEngine {
             //     const actorAfter = this.actors.slice(+i+1, this.actors.length);
             //     this.itemsGenerator.moveActor(actorEl, actorBefore, actorAfter, 100);
             // }
-        }
+        // }
 
         // TODO Adjust the SVG container size
         // TODO set svg view box https://vanseodesign.com/web-design/svg-viewbox/

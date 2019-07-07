@@ -5,7 +5,7 @@ import { ShapesGenerator, TextOption, LineOption } from "./ShapesGenerator";
 
 const ACTOR_RECT_WIDTH = 100;
 const ACTOR_RECT_HEIGHT = 50;
-const ACTOR_RECT_MIN_X_PADDING = 5;
+export const ACTOR_RECT_MIN_X_PADDING = 5;
 
 const SIGNAL_SELF_WIDTH = 25;
 const SIGNAL_SELF_HEIGHT = 50;
@@ -14,6 +14,7 @@ const SIGNAL_SELF_TEXT_OFFSET_Y = SIGNAL_SELF_HEIGHT / 2;
 
 const SIGNAL_TEXT_OFFSET_X = 5;
 const SIGNAL_TEXT_OFFSET_Y = 5;
+const SIGNAL_X_PADDING = 10;
 
 const SIGNAL_CREATION_WIDTH = 100;
 
@@ -95,10 +96,11 @@ export default class ItemsGenerator {
 
         const rectWidth = actor.topRect.text.getBBox().width + (ACTOR_RECT_MIN_X_PADDING * 2); 
         const lineX = (rectWidth / 2) + actor.topRect.rect.getBBox().x;
+        const offsetX = lineX - actor.line.getBBox().x;
+        console.log(`Resizing actor rectangles ${actor.actor.name} to ${rectWidth}px and moving line to x=${lineX}`);
 
-        console.log(`Resizing actor rectangles ${actor.actor.name} to ${rectWidth} and moving line to x=${lineX}`);
-
-        actor.move(lineX, rectWidth);
+        actor.move(lineX);
+        actor.resizeRectangles(rectWidth);
     }
 
     shouldMoveActor(actor: ActorElement, nextActor: ActorElement, defaultDistanceBetweenActors: number): [boolean, number] {
@@ -127,8 +129,10 @@ export default class ItemsGenerator {
                 return [false, 0];
             }
             else if(distance < 0) {
-                const offsetX = actorRightX + defaultDistanceBetweenActors;
-                console.log(`Distance between ${actor.actor.name} and ${nextActor.actor.name} is ${distance}px, ${nextActor.actor.name} should be moved ${offsetX}px to the right`);
+                const nextActorNewLeftX = actorRightX + defaultDistanceBetweenRect;
+                const offsetX = nextActorNewLeftX - nextActorLeftX;
+                
+                console.log(`Actor ${nextActor.actor.name} is behind ${actor.actor.name}, so it should be moved to x=${nextActorNewLeftX} (offset ${offsetX}px to the right)`);
                 return [true, offsetX];
             } else {
                 const rectAWidth = actor.topRect.rect.getBBox().width;
@@ -145,116 +149,86 @@ export default class ItemsGenerator {
         }
     }
 
-    moveActor(actor: ActorElement, actorAfter: ActorElement, offsetX: number): void {
-        console.log(`Moving actor '${actorAfter.actor.name}' ${offsetX}px to the right from actor '${actor.actor.name}'`);
+    moveActor(actorAfter: ActorElement, offsetX: number): void {
+        console.log(`Moving actor '${actorAfter.actor.name}' ${offsetX}px to the right`);
 
         // Move actor
         const elementsToMove = [
-            actor.topRect.rect,
-            actor.topRect.text,
-            actor.line
+            actorAfter.topRect.rect,
+            actorAfter.topRect.text,
+            actorAfter.line
         ];
 
-        actor.selfSignals.forEach(selfSignal => {
+        actorAfter.selfSignals.forEach(selfSignal => {
             elementsToMove.push(...selfSignal.lines);
             elementsToMove.push(selfSignal.text);
         });
 
-        if(actor.bottomRect) {
-            elementsToMove.push(actor.bottomRect.rect);
-            elementsToMove.push(actor.bottomRect.text);
+        if(actorAfter.bottomRect) {
+            elementsToMove.push(actorAfter.bottomRect.rect);
+            elementsToMove.push(actorAfter.bottomRect.text);
         }
 
         this.shapesGenerator.translateElements(elementsToMove, offsetX);
-        
-
-        // this._moveIncomingSignals(actor, offsetX);
-        // this._moveOutgoingSignals(actor, offsetX);
-        
-        // Move actors-after
-        // actorsAfter.forEach(actorAfter => {
-        //     const actorAfterOffsetX = offsetX + actor.topRect.rect.getBBox().width;
-        //     this._moveActor(actorAfter, actorAfterOffsetX);
-        // });
-
-        // Move actors-before
-
-        // signals from actors-before that have signals that goes to actors-after but not to actor
-        // const signalsToExtend: SignalElement[] = []; 
-        // actorsBefore.forEach(actorBefore => {
-
-        //     // Get each incoming signal when the Actor A is not the "main" actor 
-        //     // A  Z  B
-        //     // A <-- B
-        //     actorBefore.incomingSignals.filter(inSignal => {
-        //         if(inSignal.actorA.actor.name !== actor.actor.name) {
-        //             signalsToExtend.push(inSignal);
-        //         }
-        //     });
-
-        //     // Get each outgoing signal when the Actor B is not the "main" actor 
-        //     // A  Z  B
-        //     // A --> B
-        //     actorBefore.outgoingSignals.filter(inSignal => {
-        //         if(inSignal.actorB.actor.name !== actor.actor.name) {
-        //             signalsToExtend.push(inSignal);
-        //         }
-        //     });
-        // });
-
-        // signalsToExtend.forEach(signal => {
-
-        //     console.log(`Extending signal ${signal.toString()}`);
-
-        //     // Extend line
-        //     const x1 = signal.line.getBBox().x;
-        //     const x2 = signal.line.getBBox().x2 + offsetX;
-        //     this.shapesGenerator.extendElement(signal.line, x1, x2);
-
-        //     // Move text of incoming signals to the actorA line
-        //     if(signal.lineType === LineType.RESPONSE) {
-        //         this.shapesGenerator.translateElement(signal.text, offsetX);
-        //     }
-        // });
     }
 
-    _moveIncomingSignals(actorEl: ActorElement, offsetX: number) : void {
-        /*
-         * Extend Actor incoming signals
-         */
-        actorEl.incomingSignals.forEach(signalEl => {
-            if(signalEl.lineType === LineType.REQUEST) {
-                const x1 = signalEl.line.getBBox().x;
-                const x2 = signalEl.line.getBBox().x2 + offsetX;
-                this.shapesGenerator.extendElement(signalEl.line, x1, x2);
-            } 
-            else if(signalEl.lineType === LineType.RESPONSE) {
-                const x1 = signalEl.line.getBBox().x + offsetX;
-                const x2 = signalEl.line.getBBox().x2 + offsetX;
-                this.shapesGenerator.extendElement(signalEl.line, x1, x2);
-                this.shapesGenerator.translateElement(signalEl.text, offsetX);
-            }
-        });
-    }
+    // closeActor = could be on the right or on the left
+    isSignalTextTooLong(signal: SignalElement, closeActor: ActorElement): [boolean, number] {
 
-    _moveOutgoingSignals(actorEl: ActorElement, offsetX: number) : void {
-        /*
-         * Extend Actor outgoing signals
-         */
-        actorEl.outgoingSignals.forEach(signalEl => {
-            if(signalEl.lineType === LineType.REQUEST) {
-                const x1 = signalEl.line.getBBox().x + offsetX;
-                const x2 = signalEl.line.getBBox().x2 + offsetX;
-                this.shapesGenerator.extendElement(signalEl.line, x1, x2);
-                this.shapesGenerator.translateElement(signalEl.text, offsetX);
-            } 
-            else if(signalEl.lineType === LineType.RESPONSE) {
-                const x1 = signalEl.line.getBBox().x;
-                const x2 = signalEl.line.getBBox().x2 + offsetX;
-                this.shapesGenerator.extendElement(signalEl.line, x1, x2);
-                this.shapesGenerator.translateElement(signalEl.text, offsetX);
+        if(!closeActor) {
+            return [false, 0];
+        }
+
+        if(signal.signalType === SignalType.SIMPLE) {
+            
+            // Check if the text overlaps the next actor life line
+            if(signal.lineType === LineType.REQUEST) {
+                const nextActorLineX = closeActor.line.getBBox().x;
+                const signalTextX1 = signal.text.getBBox().x;
+                const signalTextX2 = signalTextX1 + signal.text.getBBox().width;
+    
+                const overlaps = (signalTextX1 < nextActorLineX) && (nextActorLineX < signalTextX2);
+    
+                if(overlaps === true) {
+                    const offsetX = signalTextX2 - nextActorLineX + SIGNAL_X_PADDING;
+                    console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.innerSVG()}`);
+                    return [true, offsetX];
+                } 
             }
-        });
+            // Check if the text overlaps the current actor life line
+            else if(signal.lineType === LineType.RESPONSE) {
+                const currentActorLineX = signal.actorB.line.getBBox().x;
+                const signalTextX1 = signal.text.getBBox().x;
+                const signalTextX2 = signalTextX1 + signal.text.getBBox().width;
+
+                const oldSignalLength = signal.actorA.line.getBBox().x - signal.actorB.line.getBBox().x;
+                const newSignalLength = signalTextX2 - signalTextX1;
+
+                const overlaps = (signalTextX1 < currentActorLineX) && (currentActorLineX < signalTextX2);
+    
+                if(overlaps === true) {
+                    const offsetX = newSignalLength - oldSignalLength + SIGNAL_X_PADDING;
+                    console.log(`Signal text is too long, it overlaps on actor '${signal.actorB.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.innerSVG()}`);
+                    return [true, offsetX];
+                } 
+            }
+        } 
+        // Check if the text overlaps the next actor top rect
+        else if(signal.signalType === SignalType.ACTOR_CREATION) {
+            const nextActorTopRectX = closeActor.topRect.rect.getBBox().x;
+            const signalTextX1 = signal.text.getBBox().x;
+            const signalTextX2 = signalTextX1 + signal.text.getBBox().width;
+
+            const overlaps = (signalTextX1 < nextActorTopRectX) && (nextActorTopRectX < signalTextX2);
+
+            if(overlaps === true) {
+                const offsetX = signalTextX2 - nextActorTopRectX + SIGNAL_X_PADDING;
+                console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}' top rectangle, this actor should be moved ${offsetX}px to the right. Text=${signal.text.innerSVG()}`);
+                return [true, offsetX];
+            } 
+        } 
+
+        return [false, 0];
     }
 
     _drawActorCreatedBySignal(signal: Signal, x: number, y: number, offsetY: number): ActorElement {

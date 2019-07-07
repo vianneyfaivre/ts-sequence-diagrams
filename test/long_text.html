@@ -5,6 +5,17 @@
     </head>
 
     <body>
+         <pre>
+                Vianney->Server: GET /ping
+                Server->*Backend: hey you, I would like to talk to you: blabla blabla blabla blabla 
+                Backend->FileSystem: what? 
+                FileSystem-->Backend: ping ping ping ping ping ping ping ping ping ping 
+                Vianney->Vianney: process... process... process... process... process... process... process...
+                FileSystem->WOWWWWWWWWWWWWWWWWWWWWWWWWW: wow
+                Vianney->WOWWWWWWWWWWWWWWWWWWWWWWWWW: req wow
+                WOWWWWWWWWWWWWWWWWWWWWWWWWW-->Vianney: resp wow
+         </pre>
+
         <svg id="diagram-container" style="width: 5000px; height: 5000px"></svg>
         
         <script src="../dist/bundle.js"></script>

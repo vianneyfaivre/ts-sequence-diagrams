@@ -20,10 +20,23 @@ export class ActorElement {
         this.destroyed = false;
     }
 
-    move(lineX: number, rectWidth: number): void {
+    resizeRectangles(rectWidth: number): void {
         this.topRect.rect.attr({
             "width": rectWidth
         });
+
+        if(this.bottomRect) {
+            this.bottomRect.rect.attr({
+                "width": rectWidth
+            });
+
+            this.bottomRect.text.attr({
+                "x": this.line.getBBox().x
+            });
+        }
+    }
+
+    move(lineX: number): void {
 
         this.topRect.text.attr({
             "x": lineX
@@ -33,16 +46,6 @@ export class ActorElement {
             "x1": lineX,
             "x2": lineX
         });
-
-        if(this.bottomRect) {
-            this.bottomRect.rect.attr({
-                "width": rectWidth
-            });
-
-            this.bottomRect.text.attr({
-                "x": lineX
-            });
-        }
     }
 
     toString(): String {
