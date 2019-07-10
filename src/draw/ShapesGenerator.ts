@@ -1,4 +1,5 @@
 import * as Snap from 'snapsvg';
+import { CrossElement } from './model';
 
 export enum LineOption {
     END_MARKER,
@@ -76,7 +77,7 @@ export class ShapesGenerator {
         return t;
     }
 
-    drawCross(x: number, y: number) {
+    drawCross(x: number, y: number): CrossElement {
         const SQUARE_SIDE_WIDTH = 20;
 
         const x1 = x - (SQUARE_SIDE_WIDTH / 2);
@@ -95,25 +96,18 @@ export class ShapesGenerator {
             "stroke": "black",
             "stroke-width": 2
         });
-    }
-    
-    extendElement(element: Snap.Element, x1: number, x2: number) {
-        // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
-        element.attr(
-            {
-                "x1": x1,
-                "x2": x2
-        });
+
+        return new CrossElement(line1, line2);
     }
 
     translateElements(elements: Snap.Element[], offsetX: number) {
         // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
         elements
             .filter(element => element != null)
-            .forEach(element => this.translateElement(element, offsetX));
+            .forEach(element => this._translateElement(element, offsetX));
     }
 
-    translateElement(element: Snap.Element, offsetX: number) {
+    _translateElement(element: Snap.Element, offsetX: number) {
 
         let fullOffsetX = offsetX;
 

@@ -9,7 +9,7 @@
   "scripts": {
     "build": "webpack --config webpack.config.js --parallel",
     "watch": "webpack --watch",
-    "start": "webpack --watch && webpack-dev-server"
+    "start": "webpack --mode=development --watch && webpack-dev-server"
   },
   "author": "Vianney FAIVRE",
   "license": "GPL-3.0-only",

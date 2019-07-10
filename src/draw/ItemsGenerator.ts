@@ -1,5 +1,5 @@
 import { Signal } from "../model/Signal";
-import { SignalElement, ActorElement, LineType, ActorRect, SignalType } from "./model";
+import { SignalElement, ActorElement, LineType, ActorRect, SignalType, CrossElement } from "./model";
 import Actor from "../model/Actor";
 import { ShapesGenerator, TextOption, LineOption } from "./ShapesGenerator";
 
@@ -14,7 +14,7 @@ const SIGNAL_SELF_TEXT_OFFSET_Y = SIGNAL_SELF_HEIGHT / 2;
 
 const SIGNAL_TEXT_OFFSET_X = 5;
 const SIGNAL_TEXT_OFFSET_Y = 5;
-const SIGNAL_X_PADDING = 10;
+export const SIGNAL_X_PADDING = 10;
 
 const SIGNAL_CREATION_WIDTH = 100;
 
@@ -39,7 +39,11 @@ export default class ItemsGenerator {
         const signalToSelf = signal.toSameActor();
 
         if(signalToSelf) {
-            signalElement = this._drawSelfSignal(signal, offsetY, actorElA);
+            if(!actorElA) {
+                signalElement = this._drawSelfSignal(signal, offsetY, actorElACreatedBySignal);
+            } else {
+                signalElement = this._drawSelfSignal(signal, offsetY, actorElA);
+            }
         }
         else if(classicActors) {
             signalElement = this._drawSignalFromAToB(signal, actorElA, actorElB, offsetY);
@@ -92,15 +96,41 @@ export default class ItemsGenerator {
         return false;
     }
 
-    resizeActor(actor: ActorElement): void {
+    resizeAndMoveActor(actor: ActorElement): void {
 
         const rectWidth = actor.topRect.text.getBBox().width + (ACTOR_RECT_MIN_X_PADDING * 2); 
         const lineX = (rectWidth / 2) + actor.topRect.rect.getBBox().x;
         const offsetX = lineX - actor.line.getBBox().x;
+
         console.log(`Resizing actor rectangles ${actor.actor.name} to ${rectWidth}px and moving line to x=${lineX}`);
 
-        actor.move(lineX);
-        actor.resizeRectangles(rectWidth);
+        // Resize top rect
+        actor.topRect.text.attr({
+            "x": lineX
+        });
+        actor.topRect.rect.attr({
+            "width": rectWidth
+        });
+
+        // Move life line
+        actor.line.attr({
+            "x1": lineX,
+            "x2": lineX
+        });
+
+        // Move cross
+        this.updateDestroyedActor(actor);
+
+        // Resize bottom rect
+        if(actor.bottomRect) {
+            actor.bottomRect.rect.attr({
+                "width": rectWidth
+            });
+
+            actor.bottomRect.text.attr({
+                "x": lineX
+            });
+        }
     }
 
     shouldMoveActor(actor: ActorElement, nextActor: ActorElement, defaultDistanceBetweenActors: number): [boolean, number] {
@@ -159,17 +189,19 @@ export default class ItemsGenerator {
             actorAfter.line
         ];
 
-        actorAfter.selfSignals.forEach(selfSignal => {
-            elementsToMove.push(...selfSignal.lines);
-            elementsToMove.push(selfSignal.text);
-        });
-
         if(actorAfter.bottomRect) {
             elementsToMove.push(actorAfter.bottomRect.rect);
             elementsToMove.push(actorAfter.bottomRect.text);
         }
 
+        // if(actorAfter.cross) {
+        //     elementsToMove.push(actorAfter.cross.line1);
+        //     elementsToMove.push(actorAfter.cross.line2);
+        // }
+
         this.shapesGenerator.translateElements(elementsToMove, offsetX);
+
+        // this.updateDestroyedActor(actorAfter);
     }
 
     // closeActor = could be on the right or on the left
@@ -353,7 +385,7 @@ export default class ItemsGenerator {
         return [signalEl, actorElB];
     }
 
-    destroyActor(actorEl: ActorElement, offsetY: number): void {
+    destroyActor(actorEl: ActorElement, offsetY: number): [Snap.Element, CrossElement] {
         // Draw actor line
         const x = actorEl.topRect.rect.getBBox().x + (ACTOR_RECT_WIDTH / 2);
         const y1 = actorEl.topRect.rect.getBBox().y + ACTOR_RECT_HEIGHT;
@@ -362,7 +394,9 @@ export default class ItemsGenerator {
         const line = this.shapesGenerator.drawLine(x, x, y1, y2);
 
         // Draw cross
-        const cross =this.shapesGenerator.drawCross(x, y2);
+        const cross = this.shapesGenerator.drawCross(x, y2);
+
+        return [line, cross];
     }
 
     _drawLivingActorLineAndRect(actorElement: ActorElement, actorName: string, offsetY: number): [Snap.Element, ActorRect] {
@@ -383,5 +417,140 @@ export default class ItemsGenerator {
         const text = this.shapesGenerator.drawText(textX, textY, actorName, [TextOption.CENTERED]);
 
         return [line, new ActorRect(rect, text)];
+    }
+
+    updateDestroyedActor(actor: ActorElement): void {
+        if(actor.cross && actor.destroyed === true) {
+                
+            const lifeLineX = actor.line.getBBox().x;
+            
+            const oldLineX1 = actor.cross.line1.getBBox().x;
+            const oldLineX2 = actor.cross.line1.getBBox().x2;
+
+            const crossWidth = actor.cross.line1.getBBox().width;
+            
+            const newLineX1 = lifeLineX - (crossWidth / 2);
+            const newLineX2 = lifeLineX + (crossWidth / 2);
+
+            const shouldBeAdjusted = (oldLineX1 != newLineX1) && (oldLineX2 < newLineX2);
+            
+            if(shouldBeAdjusted === true) {
+
+                actor.cross.line1.attr({
+                    x1: newLineX1,
+                    x2: newLineX2
+                });
+
+                actor.cross.line2.attr({
+                    x1: newLineX1,
+                    x2: newLineX2
+                });
+            }
+        }
+    }
+
+    adjustActorSignals(actor: ActorElement): void {
+        const allSignals = [
+            ...actor.incomingSignals,
+            ...actor.outgoingSignals,
+            ...actor.selfSignals
+        ];
+
+        // Redraw signals start and end
+        for(const j in allSignals) {
+            const signal = allSignals[j];
+
+            if(signal.signalType === SignalType.SIMPLE) {
+
+                if(signal.toSameActor() === true) {
+                    const line1 = signal.lines[0];
+                    const line2 = signal.lines[1];
+                    const line3 = signal.lines[2];
+                    
+                    const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== line1.getBBox().x) 
+                        || (signal.actorA.line.getBBox().x !== line3.getBBox().x2);
+    
+                    if(shouldBeAdjusted === true) {
+                        console.log(`Adjusting '${signal.actorA.actor.name}' self signal : ${signal.text.innerSVG()}`);
+                        const line1Width = line1.getBBox().width;
+
+                        line1.attr({
+                            "x1": signal.actorA.line.getBBox().x,
+                            "x2": signal.actorA.line.getBBox().x + line1Width
+                        });
+
+                        line2.attr({
+                            "x1": signal.actorA.line.getBBox().x + line1Width,
+                            "x2": signal.actorA.line.getBBox().x + line1Width
+                        });
+
+                        line3.attr({
+                            "x1": signal.actorA.line.getBBox().x + line1Width,
+                            "x2": signal.actorA.line.getBBox().x
+                        });
+    
+                        signal.text.attr({
+                            "x": signal.actorA.line.getBBox().x + line1Width + SIGNAL_X_PADDING
+                        });
+                    }
+                }
+                else if(signal.lineType === LineType.REQUEST) {
+
+                    const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== signal.line.getBBox().x) 
+                                            || (signal.actorB.line.getBBox().x !== signal.line.getBBox().x2);
+
+                    if(shouldBeAdjusted === true) {
+                        // console.log(`Adjusting request signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
+    
+                        signal.line.attr({
+                            "x1": signal.actorA.line.getBBox().x,
+                            "x2": signal.actorB.line.getBBox().x
+                        });
+    
+                        signal.text.attr({
+                            "x": ACTOR_RECT_MIN_X_PADDING + signal.actorA.line.getBBox().x
+                        });
+                    }
+                } 
+                else if(signal.lineType === LineType.RESPONSE){
+                    const shouldBeAdjusted = (signal.actorB.line.getBBox().x !== signal.line.getBBox().x) 
+                                             || (signal.actorA.line.getBBox().x !== signal.line.getBBox().x2) 
+
+                    if(shouldBeAdjusted === true) {
+                        // console.log(`Adjusting response signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
+    
+                        signal.line.attr({
+                            "x1": signal.actorB.line.getBBox().x,
+                            "x2": signal.actorA.line.getBBox().x
+                        });
+    
+                        const textX = signal.line.getBBox().x2 - signal.text.getBBox().width - ACTOR_RECT_MIN_X_PADDING;
+    
+                        signal.text.attr({
+                            "x": textX
+                        });
+                    }
+                }
+            } 
+            else if (signal.signalType === SignalType.ACTOR_CREATION) {
+
+                const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== signal.line.getBBox().x) 
+                                      || (signal.actorB.topRect.rect.getBBox().x !== signal.line.getBBox().x2) 
+
+                if(shouldBeAdjusted === true) {
+                    // console.log(`Adjusting creation signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
+
+                    signal.line.attr({
+                        "x1": signal.actorA.line.getBBox().x,
+                        "x2": signal.actorB.topRect.rect.getBBox().x
+                    });
+    
+                    signal.text.attr({
+                        "x": ACTOR_RECT_MIN_X_PADDING + signal.actorA.line.getBBox().x
+                    });
+                }
+                
+            }
+        }
     }
 }

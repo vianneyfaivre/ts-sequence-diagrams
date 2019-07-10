@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+
+    <body>
+        <svg id="diagram-container" style="width: 5000px; height: 5000px"></svg>
+        
+        <script src="../dist/bundle.js"></script>
+        <script>
+            var input = 
+            `
+            A->B: signal_REQ_AB
+            A-->B: signal_RESP_AB
+            A->A: signal_REQ_AA
+            A-->A: signal_RESP_AA
+            A->*C: signal_CREA_AC
+            C-->A: signal_RESP_CA
+            A->D: signal_REQ_AD
+            D->A: signal_REQ_DA
+            D-->A: signal_RESP_DA
+            E->*F: signal_CREA_EF
+            F->*GGGGGGGGGGGGGGGGGGGGGGGGGG: signal_CREA_FG
+            GGGGGGGGGGGGGGGGGGGGGGGGGG->GGGGGGGGGGGGGGGGGGGGGGGGGG: signal_REQ_GG
+            GGGGGGGGGGGGGGGGGGGGGGGGGG->*H: signal_CREA_GH
+            destroy F
+            destroy GGGGGGGGGGGGGGGGGGGGGGGGGG
+            destroy H
+            A->IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII: signal_REQ_AI
+            IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII->J: signal_REQ_IJ
+            J->IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII: signal_REQ_JI
+            IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII->IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII: signal_REQ_II
+            IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII-->A: signal_REQ_IA
+            `;
+            var sequenceDiagram = new SequenceDiagram();
+            sequenceDiagram.load(input);
+            sequenceDiagram.draw("diagram-container");
+            //sequenceDiagram.debug();
+        </script>
+    </body>
+</html>

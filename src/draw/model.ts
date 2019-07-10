@@ -9,6 +9,7 @@ export class ActorElement {
     bottomRect: ActorRect;
     line: Snap.Element;
     destroyed: boolean;
+    cross: CrossElement;
 
     constructor(
         readonly actor: Actor,
@@ -20,34 +21,6 @@ export class ActorElement {
         this.destroyed = false;
     }
 
-    resizeRectangles(rectWidth: number): void {
-        this.topRect.rect.attr({
-            "width": rectWidth
-        });
-
-        if(this.bottomRect) {
-            this.bottomRect.rect.attr({
-                "width": rectWidth
-            });
-
-            this.bottomRect.text.attr({
-                "x": this.line.getBBox().x
-            });
-        }
-    }
-
-    move(lineX: number): void {
-
-        this.topRect.text.attr({
-            "x": lineX
-        });
-
-        this.line.attr({
-            "x1": lineX,
-            "x2": lineX
-        });
-    }
-
     toString(): String {
         let hasBottomRect = false;
         if(this.bottomRect) {
@@ -57,6 +30,13 @@ export class ActorElement {
         return `Actor '${this.actor.name}'. Signals: outgoing=${this.outgoingSignals.length} incoming=${this.incomingSignals.length} self=${this.selfSignals.length}. bottomRect=${hasBottomRect}. dies=${this.destroyed}`;
     }
 }
+
+export class CrossElement {
+    constructor(
+        readonly line1: Snap.Element, 
+        readonly line2: Snap.Element
+    ) {}
+} 
 
 export class ActorRect {
 
@@ -93,6 +73,10 @@ export class SignalElement {
         readonly actorA: ActorElement,
         readonly actorB: ActorElement
     ) {}
+
+    toSameActor() {
+        return this.actorA.actor.name === this.actorB.actor.name; 
+    }
 
     toString() {
         const toSelf = this.actorA.actor.name === this.actorB.actor.name;

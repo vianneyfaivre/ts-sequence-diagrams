@@ -1,10 +1,10 @@
 import Actor from "../model/Actor";
 import { Signal, SignalType, LineType } from "../model/Signal";
-import ItemsGenerator, { ACTOR_RECT_MIN_X_PADDING } from "./ItemsGenerator";
+import ItemsGenerator, { ACTOR_RECT_MIN_X_PADDING, SIGNAL_X_PADDING } from "./ItemsGenerator";
 import { ActorElement, SignalElement } from "./model";
 
 const DISTANCE_BETWEEN_SIGNALS = 50;
-const DISTANCE_BETWEEN_ACTORS = 200;
+const DISTANCE_BETWEEN_ACTORS = 150;
 
 /**
  * Generates the whole Sequence Diagram, also it does error handling and logging
@@ -36,6 +36,14 @@ export default class SvgEngine {
                 const actorElB = this._getActorElement(signal.actorB, false);
                 const actorElACreatedBySignal = this._getActorElement(signal.actorA, true);
                 const actorElBCreatedBySignal = this._getActorElement(signal.actorB, true);
+
+                if(!actorElA && !actorElACreatedBySignal) {
+                    console.error(`Can't draw ${signal} because Actor A '${signal.actorA.name}' has not been drawn`);
+                }
+                
+                if(!actorElB && !actorElBCreatedBySignal) {
+                    console.error(`Can't draw ${signal} because Actor B '${signal.actorB.name}' has not been drawn`);
+                }
 
                 const signalElement = this.itemsGenerator.drawSignal(signal, offsetY, actorElA, actorElB, actorElACreatedBySignal, actorElBCreatedBySignal);
 
@@ -98,11 +106,14 @@ export default class SvgEngine {
                 if(actorElement) {
                     console.log(`Drawing destruction of actor '${signal.actorA}'`);
 
-                    const signalElement = this.itemsGenerator.destroyActor(actorElement, offsetY);
+                    const [actorLine, actorCross] = this.itemsGenerator.destroyActor(actorElement, offsetY);
                     
+                    actorElement.line = actorLine;
+                    actorElement.cross = actorCross;
+                    actorElement.destroyed = true;
+
                     // Update state
                     this.destroyedActors.push(signal.actorA);
-                    actorElement.destroyed = true;
                     offsetY += DISTANCE_BETWEEN_SIGNALS;
                 } else {
                     console.warn(`Can't draw destruction of actor '${signal.actorA}'`);
@@ -135,29 +146,19 @@ export default class SvgEngine {
         }
     }
 
-    adjustSignals(actorsSorted: ActorElement[], nextActors: ActorElement[], actor: ActorElement, i: number) {
+    adjustSignals(actor: ActorElement, nextActors: ActorElement[]) {
         const actorSignals = [
             ...actor.selfSignals,
             ...actor.incomingSignals,
             ...actor.outgoingSignals
         ];
 
-        // TODO put as fn parameters
-        const beforeActor = actorsSorted[+i-1];
-        const nextActor = actorsSorted[+i+1];
+        const nextActor = nextActors[0];
 
-        // Move actors
         for(const j in actorSignals) {
             const signal = actorSignals[j];
-
-            // if(beforeActor){
-            //     const [shouldMove, offsetX] = this.itemsGenerator.isSignalTextTooLong(signal, beforeActor);
-            //     if(shouldMove === true) {
-            //         console.log("SHOULD MOVE BEFORE");
-            //         // TODO : move the actor before and all next actors
-            //     }
-            // }
-
+            
+            // Move next actor if any of the current actor signals is too long
             if(nextActor){
                 const [shouldMove, offsetX] = this.itemsGenerator.isSignalTextTooLong(signal, nextActor);
                 if(shouldMove === true) {
@@ -165,81 +166,7 @@ export default class SvgEngine {
                 }
             }
 
-            this._updateSignals(actor);
-        }
-
-        // this._updateSignals(actor);
-    }
-
-    _updateSignals(actor: ActorElement): void {
-        const inoutSignals = [
-            ...actor.incomingSignals,
-            ...actor.outgoingSignals
-        ];
-
-        // Redraw signals start and end
-        for(const j in inoutSignals) {
-            const signal = inoutSignals[j];
-
-            if(signal.signalType === SignalType.SIMPLE) {
-                
-                if(signal.lineType === LineType.REQUEST) {
-
-                    const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== signal.line.getBBox().x) 
-                                            || (signal.actorB.line.getBBox().x !== signal.line.getBBox().x2) 
-
-                    if(shouldBeAdjusted === true) {
-                        // console.log(`Adjusting request signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
-    
-                        signal.line.attr({
-                            "x1": signal.actorA.line.getBBox().x,
-                            "x2": signal.actorB.line.getBBox().x
-                        });
-    
-                        signal.text.attr({
-                            "x": ACTOR_RECT_MIN_X_PADDING + signal.actorA.line.getBBox().x
-                        });
-                    }
-                } 
-                else if(signal.lineType === LineType.RESPONSE){
-                    const shouldBeAdjusted = (signal.actorB.line.getBBox().x !== signal.line.getBBox().x) 
-                                             || (signal.actorA.line.getBBox().x !== signal.line.getBBox().x2) 
-
-                    if(shouldBeAdjusted === true) {
-                        // console.log(`Adjusting response signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
-    
-                        signal.line.attr({
-                            "x1": signal.actorB.line.getBBox().x,
-                            "x2": signal.actorA.line.getBBox().x
-                        });
-    
-                        const textX = signal.line.getBBox().x2 - signal.text.getBBox().width - ACTOR_RECT_MIN_X_PADDING;
-    
-                        signal.text.attr({
-                            "x": textX
-                        });
-                    }
-                }
-            } 
-            else if (signal.signalType === SignalType.ACTOR_CREATION) {
-
-                const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== signal.line.getBBox().x) 
-                                      || (signal.actorB.topRect.rect.getBBox().x !== signal.line.getBBox().x2) 
-
-                if(shouldBeAdjusted === true) {
-                    // console.log(`Adjusting creation signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
-
-                    signal.line.attr({
-                        "x1": signal.actorA.line.getBBox().x,
-                        "x2": signal.actorB.topRect.rect.getBBox().x
-                    });
-    
-                    signal.text.attr({
-                        "x": ACTOR_RECT_MIN_X_PADDING + signal.actorA.line.getBBox().x
-                    });
-                }
-                
-            }
+            this.itemsGenerator.adjustActorSignals(actor);
         }
     }
 
@@ -266,7 +193,7 @@ export default class SvgEngine {
 
             const actorToResize = this.itemsGenerator.shouldResizeActor(actorEl);
             if(actorToResize === true) {
-                this.itemsGenerator.resizeActor(actorEl);
+                this.itemsGenerator.resizeAndMoveActor(actorEl);
             }
         }
 
@@ -282,59 +209,17 @@ export default class SvgEngine {
             }
         }
 
-        // d. Adjust space between actors if text is too long
-        console.log("* ADJUSTING BASED ON SIGNAL TEXT WIDTH *");
+        // d. Adjust signals
         for (const i in actorsSorted) {
 
             const actorEl = actorsSorted[i];
             const nextActors = actorsSorted.slice(+i+1);
 
-            // if(!nextActors || nextActors.length === 0) {
-            //     break;
-            // }
+            console.log(`* ADJUSTING SIGNALS OF ACTOR '${actorEl.actor.name}' *`);
 
-            console.log(`* ADJUSTING ACTOR ${actorEl.actor.name} SIGNALS*`);
-
-            this.adjustSignals(actorsSorted, nextActors, actorEl, +i);
+            this.adjustSignals(actorEl, nextActors);
+            this.itemsGenerator.updateDestroyedActor(actorEl);
         }
-
-        // e. Redraw signals
-        // console.log("* REDRAWING SIGNALS *");
-
-        // for (const i in this.actors) {
-        //     const actorEl = this.actors[i];
-
-            // Check actor elements
-            // const actorToResize = this.itemsGenerator.shouldResizeActor(actorEl);
-            // if(actorToResize === true) {
-            //     const actorsBefore = this.actors.slice(0, +i);
-            //     const actorsAfter = this.actors.slice(+i+1, this.actors.length);
-                
-                // TODO: 
-                //     - reajuster les acteurs (top et bottom rectangles)
-                //     - ré-espacer les acteurs
-                //     - rallonger les signaux quand le texte est plus long que les trois quarts de la line.width 
-                //         - penser a décaler tous les prochains acteurs dans ce cas la
-                //             - offset = new line width - old width
-                //     - replacer si besoin les acteurs
-                //     - replacer les signaux  
-                //         - signal x1 == actor a . x 
-                //         - signal x2 == actor b . x 
-
-                // this.itemsGenerator.resizeActor(actorEl);
-
-                // this.itemsGenerator.moveActor(actorEl, actorBefore, actorAfter, newRectWidth);
-            // }
-
-            // Check signal elements
-
-            // TODO write condition (signal text too long, actor rect text too long (x2))
-            // if(actorEl.actor.name === 'Server') {
-            //     const actorBefore = this.actors.slice(0, +i);
-            //     const actorAfter = this.actors.slice(+i+1, this.actors.length);
-            //     this.itemsGenerator.moveActor(actorEl, actorBefore, actorAfter, 100);
-            // }
-        // }
 
         // TODO Adjust the SVG container size
         // TODO set svg view box https://vanseodesign.com/web-design/svg-viewbox/

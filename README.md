@@ -12,9 +12,12 @@ Features:
 * Participants order
 * Diagram title
 * Draw on input/textarea change
+* Actor destroyed then recreated
 
 Bugs:
 
+* long text bug see /long_text.html
+* req from B to A see complex.html
 * trim messages
 * padding for root svg object
 
@@ -26,10 +29,6 @@ Tech stuff:
 * Automate the grammar build (use make)
 * use https://svgjs.com instead of snap
 * silent logs
-
-Test cases:
-
-* Actor creation in the middle of some classic actors
 
 ## Build the grammar
 
