@@ -1,10 +1,8 @@
-import Actor from "../model/Actor";
-import { Signal, SignalType, LineType } from "../model/Signal";
-import ItemsGenerator, { ACTOR_RECT_MIN_X_PADDING, SIGNAL_X_PADDING } from "./ItemsGenerator";
-import { ActorElement, SignalElement } from "./model";
-
-const DISTANCE_BETWEEN_SIGNALS = 50;
-const DISTANCE_BETWEEN_ACTORS = 150;
+import { ActorElement, SignalElement, SignalType, LineType, Dimensions } from "../dao/draw/model";
+import ItemsGenerator from "../facade/ItemsGenerator";
+import { Signal, Actor } from "../dao/parser/model";
+import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
+import AdjustmentsEngine from "../facade/AdjustmentsEngine";
 
 /**
  * Generates the whole Sequence Diagram, also it does error handling and logging
@@ -12,13 +10,18 @@ const DISTANCE_BETWEEN_ACTORS = 150;
 export default class SvgEngine {
 
     itemsGenerator: ItemsGenerator;
+    adjustmentsEngine: AdjustmentsEngine;
     actors: ActorElement[];
     signals: SignalElement[];
     destroyedActors: Actor[];
 
     constructor(svgElementId: string) {
         const container = document.getElementById(svgElementId) as unknown as SVGElement;
-        this.itemsGenerator = new ItemsGenerator(container);
+        const shapesGenerator = new ShapesGenerator(container);
+
+        this.itemsGenerator = new ItemsGenerator(shapesGenerator);
+        this.adjustmentsEngine = new AdjustmentsEngine(shapesGenerator);
+
         this.actors = [];
         this.signals = [];
         this.destroyedActors = [];
@@ -26,7 +29,7 @@ export default class SvgEngine {
 
     drawSignals(signals: Signal[]) {
         
-        var offsetY = DISTANCE_BETWEEN_SIGNALS;
+        var offsetY = Dimensions.DISTANCE_BETWEEN_SIGNALS;
 
         for(const signal of signals) {
             if(signal.type === SignalType.SIMPLE) {
@@ -57,9 +60,9 @@ export default class SvgEngine {
                     this._updateActorElementSignals(signalElement, signal.toSameActor());
 
                     if(signal.toSameActor()) {
-                        offsetY += DISTANCE_BETWEEN_SIGNALS * 2;
+                        offsetY += Dimensions.DISTANCE_BETWEEN_SIGNALS * 2;
                     } else {
-                        offsetY += DISTANCE_BETWEEN_SIGNALS;
+                        offsetY += Dimensions.DISTANCE_BETWEEN_SIGNALS;
                     }
                 }
 
@@ -94,7 +97,7 @@ export default class SvgEngine {
                 this.signals.push(signalElement);
                 this._updateActorElementSignals(signalElement);
 
-                offsetY += DISTANCE_BETWEEN_SIGNALS;
+                offsetY += Dimensions.DISTANCE_BETWEEN_SIGNALS;
             }
             else if(signal.type === SignalType.ACTOR_DELETION) {
                 
@@ -114,7 +117,7 @@ export default class SvgEngine {
 
                     // Update state
                     this.destroyedActors.push(signal.actorA);
-                    offsetY += DISTANCE_BETWEEN_SIGNALS;
+                    offsetY += Dimensions.DISTANCE_BETWEEN_SIGNALS;
                 } else {
                     console.warn(`Can't draw destruction of actor '${signal.actorA}'`);
                     // TODO error handling
@@ -141,7 +144,7 @@ export default class SvgEngine {
                 const actorEl = this.itemsGenerator.drawActor(actor, offsetX, 0);
                 this.actors.push(actorEl);
     
-                offsetX += DISTANCE_BETWEEN_ACTORS;
+                offsetX += Dimensions.DISTANCE_BETWEEN_ACTORS;
             }
         }
     }
@@ -160,13 +163,13 @@ export default class SvgEngine {
             
             // Move next actor if any of the current actor signals is too long
             if(nextActor){
-                const [shouldMove, offsetX] = this.itemsGenerator.isSignalTextTooLong(signal, nextActor);
+                const [shouldMove, offsetX] = this.adjustmentsEngine.isSignalTextTooLong(signal, nextActor);
                 if(shouldMove === true) {
-                    nextActors.forEach(a => this.itemsGenerator.moveActor(a, offsetX));
+                    nextActors.forEach(a => this.adjustmentsEngine.moveActor(a, offsetX));
                 }
             }
 
-            this.itemsGenerator.adjustActorSignals(actor);
+            this.adjustmentsEngine.adjustActorSignals(actor);
         }
     }
 
@@ -191,9 +194,9 @@ export default class SvgEngine {
         for (const i in actorsSorted) {
             const actorEl = actorsSorted[i];
 
-            const actorToResize = this.itemsGenerator.shouldResizeActor(actorEl);
+            const actorToResize = this.adjustmentsEngine.shouldResizeActor(actorEl);
             if(actorToResize === true) {
-                this.itemsGenerator.resizeAndMoveActor(actorEl);
+                this.adjustmentsEngine.resizeAndMoveActor(actorEl);
             }
         }
 
@@ -203,9 +206,9 @@ export default class SvgEngine {
             const actorEl = actorsSorted[i];
             const nextActor = actorsSorted[+i+1];
 
-            const [shouldMove, offsetX] = this.itemsGenerator.shouldMoveActor(actorEl, nextActor, DISTANCE_BETWEEN_ACTORS);
+            const [shouldMove, offsetX] = this.adjustmentsEngine.shouldMoveActor(actorEl, nextActor, Dimensions.DISTANCE_BETWEEN_ACTORS);
             if(shouldMove === true) {
-                this.itemsGenerator.moveActor(nextActor, offsetX);
+                this.adjustmentsEngine.moveActor(nextActor, offsetX);
             }
         }
 
@@ -218,7 +221,7 @@ export default class SvgEngine {
             console.log(`* ADJUSTING SIGNALS OF ACTOR '${actorEl.actor.name}' *`);
 
             this.adjustSignals(actorEl, nextActors);
-            this.itemsGenerator.updateDestroyedActor(actorEl);
+            this.adjustmentsEngine.updateDestroyedActor(actorEl);
         }
 
         // TODO Adjust the SVG container size

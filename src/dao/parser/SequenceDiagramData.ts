@@ -1,7 +1,6 @@
-import Actor from "../model/Actor";
-import {Signal} from "../model/Signal";
+import { Actor, Signal } from "./model";
 
-export default class ParserScope {
+export default class SequenceDiagramData {
 
     actors: Actor[];
     signals: Signal[];

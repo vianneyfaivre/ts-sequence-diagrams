@@ -1,29 +1,21 @@
-import Parser from "./parser/Parser";
-import ParserScope from "./parser/ParserScope";
-import SvgEngine from "./draw/SvgEngine";
+
+import SvgEngine from "./service/SvgEngine";
+import ParserEngine from "./facade/ParserEngine";
+import SequenceDiagramData from "./dao/parser/SequenceDiagramData";
 
 export default class SequenceDiagram {
 
-    parser: Parser;
-    data: ParserScope;
+    parser: ParserEngine;
+    data: SequenceDiagramData;
     svgEngine: SvgEngine;
 
     constructor() {
-        this.parser = new Parser();
+        this.parser = new ParserEngine();
     }
 
     load(input: string) {
         console.log("** PARSING **")
-        
-        const el = document.getElementById(input);
-        
-        if(el) {
-            this.data = this.parser.parse(el.innerHTML);
-        } else {
-            this.data = this.parser.parse(input)
-        }
-
-        this.parser = null;
+        this.data = this.parser.load(input);
     }
 
     draw(htmlElementId: string) {

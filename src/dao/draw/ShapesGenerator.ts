@@ -1,15 +1,5 @@
 import * as Snap from 'snapsvg';
-import { CrossElement } from './model';
-
-export enum LineOption {
-    END_MARKER,
-    START_MARKER,
-    DOTTED
-}
-
-export enum TextOption {
-    CENTERED
-}
+import { CrossElement, LineOption, TextOption, Dimensions } from './model';
 
 /**
  * Generates basic items: rect, text, lines, ...
@@ -78,12 +68,11 @@ export class ShapesGenerator {
     }
 
     drawCross(x: number, y: number): CrossElement {
-        const SQUARE_SIDE_WIDTH = 20;
 
-        const x1 = x - (SQUARE_SIDE_WIDTH / 2);
-        const x2 = x + (SQUARE_SIDE_WIDTH / 2);
-        const y1 = y - (SQUARE_SIDE_WIDTH / 2);
-        const y2 = y + (SQUARE_SIDE_WIDTH / 2);
+        const x1 = x - (Dimensions.CROSS_WIDTH / 2);
+        const x2 = x + (Dimensions.CROSS_WIDTH / 2);
+        const y1 = y - (Dimensions.CROSS_WIDTH / 2);
+        const y2 = y + (Dimensions.CROSS_WIDTH / 2);
 
         const line1 = this.paper.line(x1, y1, x2, y2);
         line1.attr({

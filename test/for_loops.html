@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+
+    <body>
+        <svg id="diagram-container" style="width: 5000px; height: 5000px"></svg>
+        
+        <script src="../dist/bundle.js"></script>
+        <script>
+            var input = 
+            `
+            Participant A
+            Participant B
+            Participant C
+            
+            note left of A: Each application = one folder that contains application*.properties files
+            A->*B: Run script
+            B->A: Read root folder (property "metadata.root-folder")
+            A-->B: folders
+            loop for each folder
+                B->A: Get application*.properties
+                A-->B: properties
+                loop for each file
+                    B->B: Replace placeholders
+                    B->B: Extract interesting properties
+                end
+                B->B: Transform data to Elastic format
+                B->C: Put data into app-meta index
+            end
+            B-->A: Success
+            destroy B
+            `;
+            var sequenceDiagram = new SequenceDiagram();
+            sequenceDiagram.load(input);
+            sequenceDiagram.draw("diagram-container");
+            //sequenceDiagram.debug();
+        </script>
+    </body>
+</html>

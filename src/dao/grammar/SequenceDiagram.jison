@@ -1,7 +1,5 @@
 /** 
  *  Copied from https://bramp.github.io/js-sequence-diagrams/, then updated
- *  (c) 2012-2017 Andrew Brampton (bramp.net)
- *  Simplified BSD license.
  */
 %lex
 

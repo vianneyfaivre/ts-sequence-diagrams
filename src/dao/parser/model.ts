@@ -1,7 +1,21 @@
-import Actor from "./Actor";
-import { SignalType, LineType } from "../draw/model";
+import { LineType, SignalType } from "../draw/model";
 
-class Signal {
+export class Actor {
+
+    name: string;
+    createdBySignal: boolean;
+
+    constructor(name: string, createdBySignal: boolean) {
+        this.name = name;
+        this.createdBySignal = createdBySignal;
+    }
+
+    toString() {
+        return this.name;
+    }
+}
+
+export class Signal {
     actorA: Actor;
     actorB: Actor;
     lineType: LineType;
@@ -60,5 +74,3 @@ class Signal {
         }
     }
 }
-
-export {LineType, Signal, SignalType};

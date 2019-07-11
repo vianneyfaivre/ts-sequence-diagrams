@@ -32,13 +32,14 @@ Tech stuff:
 
 ## Build the grammar
 
+Build the grammar using Jison:
+
 ```
 npm install jison -g
-jison src/grammar/SequenceDiagram.jison --outfile src/grammar/SequenceDiagram.js --module-type js
+jison src/dao/grammar/SequenceDiagram.jison --outfile src/dao/grammar/SequenceDiagram.js --module-type js
 ```
 
-export the generated code as a module. SequenceDiagram.js:
-
+To export the generated code as a module, update the end of SequenceDiagram.js:
 ```
 Parser.prototype.parse = parser.parse;
 return new Parser;

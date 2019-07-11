@@ -1,5 +1,5 @@
-import Actor from "../model/Actor";
 import * as Snap from 'snapsvg';
+import { Actor } from '../parser/model';
 
 export class ActorElement {
 
@@ -103,4 +103,37 @@ export enum SignalType {
     SIMPLE,
     ACTOR_CREATION,
     ACTOR_DELETION
+}
+
+export enum LineOption {
+    END_MARKER,
+    START_MARKER,
+    DOTTED
+}
+
+export enum TextOption {
+    CENTERED
+}
+
+export class Dimensions {
+
+    static DISTANCE_BETWEEN_SIGNALS = 50;
+    static DISTANCE_BETWEEN_ACTORS = 150;
+
+    static CROSS_WIDTH = 20;
+
+    static ACTOR_RECT_WIDTH = 100;
+    static ACTOR_RECT_HEIGHT = 50;
+    static ACTOR_RECT_MIN_X_PADDING = 5;
+
+    static SIGNAL_SELF_WIDTH = 25;
+    static SIGNAL_SELF_HEIGHT = 50;
+    static SIGNAL_SELF_TEXT_OFFSET_X = Dimensions.SIGNAL_SELF_WIDTH + 5;
+    static SIGNAL_SELF_TEXT_OFFSET_Y = Dimensions.SIGNAL_SELF_HEIGHT / 2;
+
+    static SIGNAL_TEXT_OFFSET_X = 5;
+    static SIGNAL_TEXT_OFFSET_Y = 5;
+    static SIGNAL_X_PADDING = 10;
+
+    static SIGNAL_CREATION_WIDTH = 100;
 }
