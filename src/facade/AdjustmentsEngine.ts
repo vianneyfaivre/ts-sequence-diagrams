@@ -9,6 +9,71 @@ export default class AdjustmentsEngine {
     constructor(readonly shapesGenerator: ShapesGenerator) {
     }
 
+    autoAdjust(actorsSorted: ActorElement[]) {
+
+        // b. Adjust actor top/bottom rectangles
+        console.log("* RESIZING ACTOR RECTANGLES *");
+        for (const i in actorsSorted) {
+            const actorEl = actorsSorted[i];
+
+            const actorToResize = this.shouldResizeActor(actorEl);
+            if(actorToResize === true) {
+                this.resizeAndMoveActor(actorEl);
+            }
+        }
+
+        // c. Adjust space between actors
+        console.log("* ADJUSTING SPACE BETWEEN ACTORS *");
+        for (const i in actorsSorted) {
+            const actorEl = actorsSorted[i];
+            const nextActor = actorsSorted[+i+1];
+
+            const [shouldMove, offsetX] = this.shouldMoveActor(actorEl, nextActor, Dimensions.DISTANCE_BETWEEN_ACTORS);
+            if(shouldMove === true) {
+                this.moveActor(nextActor, offsetX);
+            }
+        }
+
+        // d. Adjust signals
+        console.log(`* ADJUSTING SIGNALS *`);
+        for (const i in actorsSorted) {
+
+            const actorEl = actorsSorted[i];
+            const nextActors = actorsSorted.slice(+i+1);
+
+
+            this.adjustSignals(actorEl, nextActors);
+            this.updateDestroyedActor(actorEl);
+        }
+
+        // TODO Adjust the SVG container size
+        // TODO set svg view box https://vanseodesign.com/web-design/svg-viewbox/
+    }
+
+    adjustSignals(actor: ActorElement, nextActors: ActorElement[]) {
+        const actorSignals = [
+            ...actor.selfSignals,
+            ...actor.incomingSignals,
+            ...actor.outgoingSignals
+        ];
+
+        const nextActor = nextActors[0];
+
+        for(const j in actorSignals) {
+            const signal = actorSignals[j];
+            
+            // Move next actor if any of the current actor signals is too long
+            if(nextActor){
+                const [shouldMove, offsetX] = this.isSignalTextTooLong(signal, nextActor);
+                if(shouldMove === true) {
+                    nextActors.forEach(a => this.moveActor(a, offsetX));
+                }
+            }
+
+            this.adjustActorSignals(actor);
+        }
+    }
+
     shouldResizeActor(actor: ActorElement): boolean {
         const resize = actor.topRect.shouldBeResized();
         if(resize === true) {
@@ -156,37 +221,67 @@ export default class AdjustmentsEngine {
                     const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== signal.line.getBBox().x) 
                                             || (signal.actorB.line.getBBox().x !== signal.line.getBBox().x2);
 
-                    if(shouldBeAdjusted === true) {
+                    // if(shouldBeAdjusted === true) {
                         // console.log(`Adjusting request signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
     
-                        signal.line.attr({
-                            "x1": signal.actorA.line.getBBox().x,
-                            "x2": signal.actorB.line.getBBox().x
-                        });
-    
-                        signal.text.attr({
-                            "x": Dimensions.ACTOR_RECT_MIN_X_PADDING + signal.actorA.line.getBBox().x
-                        });
-                    }
+                        const lineX1 = signal.actorA.line.getBBox().x;
+                        const lineX2 = signal.actorB.line.getBBox().x;
+
+                        if(lineX1 < lineX2) {
+                            signal.line.attr({
+                                "x1": lineX1,
+                                "x2": lineX2
+                            });
+
+                            signal.text.attr({
+                                "x": Dimensions.ACTOR_RECT_MIN_X_PADDING + lineX1
+                            });
+                        } else {
+                            signal.line.attr({
+                                "x1": lineX2,
+                                "x2": lineX1
+                            });
+                            
+                            const textX = lineX1 - Dimensions.SIGNAL_TEXT_PADDING_X - signal.text.getBBox().w;
+
+                            signal.text.attr({
+                                "x": textX
+                            });
+                        }
+                    // }
                 } 
                 else if(signal.lineType === LineType.RESPONSE){
                     const shouldBeAdjusted = (signal.actorB.line.getBBox().x !== signal.line.getBBox().x) 
-                                             || (signal.actorA.line.getBBox().x !== signal.line.getBBox().x2) 
+                                             || (signal.actorA.line.getBBox().x !== signal.line.getBBox().x2);
 
-                    if(shouldBeAdjusted === true) {
+                    // if(shouldBeAdjusted === true) {
                         // console.log(`Adjusting response signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
     
-                        signal.line.attr({
-                            "x1": signal.actorB.line.getBBox().x,
-                            "x2": signal.actorA.line.getBBox().x
-                        });
-    
-                        const textX = signal.line.getBBox().x2 - signal.text.getBBox().width - Dimensions.ACTOR_RECT_MIN_X_PADDING;
-    
-                        signal.text.attr({
-                            "x": textX
-                        });
-                    }
+                        const lineX1 = signal.actorA.line.getBBox().x;
+                        const lineX2 = signal.actorB.line.getBBox().x;
+
+                        if(lineX1 < lineX2) {
+                            signal.line.attr({
+                                "x1": signal.actorA.line.getBBox().x,
+                                "x2": signal.actorB.line.getBBox().x
+                            });
+
+                            const textX = Dimensions.SIGNAL_TEXT_PADDING_X + signal.actorA.line.getBBox().x;
+                            signal.text.attr({
+                                "x": textX
+                            });
+                        } else {
+                            signal.line.attr({
+                                "x1": signal.actorB.line.getBBox().x,
+                                "x2": signal.actorA.line.getBBox().x
+                            });
+
+                            const textX = lineX1 - signal.text.getBBox().width - Dimensions.SIGNAL_TEXT_PADDING_X;
+                            signal.text.attr({
+                                "x": textX
+                            });
+                        }
+                    // }
                 }
             } 
             else if (signal.signalType === SignalType.ACTOR_CREATION) {

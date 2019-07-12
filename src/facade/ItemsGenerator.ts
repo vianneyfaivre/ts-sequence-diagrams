@@ -117,31 +117,12 @@ export default class ItemsGenerator {
 
         const line = this.shapesGenerator.drawLine(lineX1, lineX2, lineY, lineY, options);
 
-        if(signalGoingForward) {
-            // Draw Signal text
-            const textX = lineX1 + Dimensions.SIGNAL_TEXT_OFFSET_X;
-            const textY = lineY - Dimensions.SIGNAL_TEXT_OFFSET_Y;
-            const text = this.shapesGenerator.drawText(textX, textY, signal.message);
+        // Draw Signal text
+        const textX = lineX1 + Dimensions.SIGNAL_TEXT_PADDING_X;
+        const textY = lineY - Dimensions.SIGNAL_TEXT_PADDING_Y;
+        const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
-            return SignalElement.forward(line, signal.lineType, signal.type, text, actorElA, actorElB);
-        } else {
-            // First, draw the text
-            let textX = lineX2 - Dimensions.SIGNAL_TEXT_OFFSET_X;
-            const textY = lineY - Dimensions.SIGNAL_TEXT_OFFSET_Y;
-            let text = this.shapesGenerator.drawText(textX, textY, signal.message);
-            
-            // Get its width so it can be moved right
-            const textWidth = text.getBBox().w;
-
-            // Remove the current text
-            text.remove();
-
-            // And create a new one that will be correctly placed
-            textX = textX - textWidth;
-            text = this.shapesGenerator.drawText(textX, textY, signal.message);
-
-            return SignalElement.forward(line, signal.lineType, signal.type, text, actorElA, actorElB);
-        }
+        return SignalElement.forward(line, signal.lineType, signal.type, text, actorElA, actorElB);
     }
 
     _drawSelfSignal(signal: Signal, offsetY: number, actorElA: ActorElement): SignalElement {
@@ -159,8 +140,8 @@ export default class ItemsGenerator {
         const lines = [line1, line2, line3];
         
         // Draw text
-        const textX = x1 + Dimensions.SIGNAL_SELF_TEXT_OFFSET_X;
-        const textY = y1 + Dimensions.SIGNAL_SELF_TEXT_OFFSET_Y;
+        const textX = x1 + Dimensions.SIGNAL_SELF_WIDTH + Dimensions.SIGNAL_TEXT_PADDING_X;
+        const textY = y1 + Dimensions.SIGNAL_SELF_TEXT_PADDING_Y;
         const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
         return SignalElement.self(lines, signal.lineType, text, actorElA);
@@ -177,8 +158,8 @@ export default class ItemsGenerator {
         const line = this.shapesGenerator.drawLine(signalAX, signalBX, signalY, signalY, options);
 
         // Draw text
-        const textX = signalAX + Dimensions.SIGNAL_TEXT_OFFSET_X;
-        const textY = signalY - Dimensions.SIGNAL_TEXT_OFFSET_Y;
+        const textX = signalAX + Dimensions.SIGNAL_TEXT_PADDING_X;
+        const textY = signalY - Dimensions.SIGNAL_TEXT_PADDING_Y;
         const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
         // Draw Actor rect

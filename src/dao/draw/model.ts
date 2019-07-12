@@ -117,22 +117,38 @@ export enum TextOption {
 
 export class Dimensions {
 
+    /* Y distance between two signals */
     static DISTANCE_BETWEEN_SIGNALS = 50;
+
+    /* X distance between two actors */
     static DISTANCE_BETWEEN_ACTORS = 150;
 
+    /* X width of a destroyed actor across */
     static CROSS_WIDTH = 20;
 
+    /* Actor top/bottom rectangle width */
     static ACTOR_RECT_WIDTH = 100;
+    
+    /* Actor top/bottom rectangle height */
     static ACTOR_RECT_HEIGHT = 50;
+    
+    /* Actor top/bottom rectangle text X (left and right) padding */
     static ACTOR_RECT_MIN_X_PADDING = 5;
 
+    /* Self signal line width */
     static SIGNAL_SELF_WIDTH = 25;
-    static SIGNAL_SELF_HEIGHT = 50;
-    static SIGNAL_SELF_TEXT_OFFSET_X = Dimensions.SIGNAL_SELF_WIDTH + 5;
-    static SIGNAL_SELF_TEXT_OFFSET_Y = Dimensions.SIGNAL_SELF_HEIGHT / 2;
 
-    static SIGNAL_TEXT_OFFSET_X = 5;
-    static SIGNAL_TEXT_OFFSET_Y = 5;
+    /* Self signal line height */
+    static SIGNAL_SELF_HEIGHT = 50;
+
+    /* Self signal text Y padding */
+    static SIGNAL_SELF_TEXT_PADDING_Y = Dimensions.SIGNAL_SELF_HEIGHT / 2;
+
+    /* Signal text X padding */
+    static SIGNAL_TEXT_PADDING_X = 5;
+
+    /* Signal text Y padding */
+    static SIGNAL_TEXT_PADDING_Y = 5;
     static SIGNAL_X_PADDING = 10;
 
     static SIGNAL_CREATION_WIDTH = 100;

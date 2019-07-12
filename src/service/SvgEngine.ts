@@ -149,30 +149,6 @@ export default class SvgEngine {
         }
     }
 
-    adjustSignals(actor: ActorElement, nextActors: ActorElement[]) {
-        const actorSignals = [
-            ...actor.selfSignals,
-            ...actor.incomingSignals,
-            ...actor.outgoingSignals
-        ];
-
-        const nextActor = nextActors[0];
-
-        for(const j in actorSignals) {
-            const signal = actorSignals[j];
-            
-            // Move next actor if any of the current actor signals is too long
-            if(nextActor){
-                const [shouldMove, offsetX] = this.adjustmentsEngine.isSignalTextTooLong(signal, nextActor);
-                if(shouldMove === true) {
-                    nextActors.forEach(a => this.adjustmentsEngine.moveActor(a, offsetX));
-                }
-            }
-
-            this.adjustmentsEngine.adjustActorSignals(actor);
-        }
-    }
-
     autoAdjust() {
 
         console.log("** AUTO_ADJUSTING **");
@@ -187,45 +163,10 @@ export default class SvgEngine {
             const actorEl = actorsSorted[i];
             allActors += `${actorEl.actor.name}, `;
         }
+        
         console.log(`Actors: ${allActors}`);
 
-        // b. Adjust actor top/bottom rectangles
-        console.log("* RESIZING ACTOR RECTANGLES *");
-        for (const i in actorsSorted) {
-            const actorEl = actorsSorted[i];
-
-            const actorToResize = this.adjustmentsEngine.shouldResizeActor(actorEl);
-            if(actorToResize === true) {
-                this.adjustmentsEngine.resizeAndMoveActor(actorEl);
-            }
-        }
-
-        // c. Adjust space between actors
-        console.log("* ADJUSTING SPACE BETWEEN ACTORS *");
-        for (const i in actorsSorted) {
-            const actorEl = actorsSorted[i];
-            const nextActor = actorsSorted[+i+1];
-
-            const [shouldMove, offsetX] = this.adjustmentsEngine.shouldMoveActor(actorEl, nextActor, Dimensions.DISTANCE_BETWEEN_ACTORS);
-            if(shouldMove === true) {
-                this.adjustmentsEngine.moveActor(nextActor, offsetX);
-            }
-        }
-
-        // d. Adjust signals
-        for (const i in actorsSorted) {
-
-            const actorEl = actorsSorted[i];
-            const nextActors = actorsSorted.slice(+i+1);
-
-            console.log(`* ADJUSTING SIGNALS OF ACTOR '${actorEl.actor.name}' *`);
-
-            this.adjustSignals(actorEl, nextActors);
-            this.adjustmentsEngine.updateDestroyedActor(actorEl);
-        }
-
-        // TODO Adjust the SVG container size
-        // TODO set svg view box https://vanseodesign.com/web-design/svg-viewbox/
+        this.adjustmentsEngine.autoAdjust(actorsSorted);
     }
 
     printCurrentState() {
@@ -271,13 +212,32 @@ export default class SvgEngine {
         }
         // From A to B
         else if(signalElement.lineType === LineType.REQUEST) {
-            actorElA.outgoingSignals.push(signalElement);
-            actorElB.incomingSignals.push(signalElement);
+            const aBeforeB = actorElA.actor.order < actorElB.actor.order;
+
+            console.log(`request from ${actorElA.actor.order} to ${actorElB.actor.order}`);
+
+            // if(aBeforeB === true) {
+                actorElA.outgoingSignals.push(signalElement);
+                actorElB.incomingSignals.push(signalElement);
+            // } else {
+            //     actorElB.outgoingSignals.push(signalElement);
+            //     actorElA.incomingSignals.push(signalElement);
+            // }
         } 
         // From B to A
         else if(signalElement.lineType === LineType.RESPONSE) {
-            actorElA.outgoingSignals.push(signalElement);
-            actorElB.incomingSignals.push(signalElement);
+
+            const aBeforeB = actorElA.actor.order < actorElB.actor.order;
+            
+            console.log(`response from ${actorElA.actor.order} to ${actorElB.actor.order}`);
+
+            // if(aBeforeB === true) {
+            //     actorElA.outgoingSignals.push(signalElement);
+            //     actorElB.incomingSignals.push(signalElement);
+            // } else {
+                actorElB.outgoingSignals.push(signalElement);
+                actorElA.incomingSignals.push(signalElement);
+            // }
         } else {
             console.warn(`Unknown line type '${signalElement.lineType}'`);
         }

@@ -2,12 +2,9 @@ import { LineType, SignalType } from "../draw/model";
 
 export class Actor {
 
-    name: string;
-    createdBySignal: boolean;
-
-    constructor(name: string, createdBySignal: boolean) {
-        this.name = name;
-        this.createdBySignal = createdBySignal;
+    constructor(readonly order: number,
+                readonly name: string, 
+                readonly createdBySignal: boolean) {
     }
 
     toString() {

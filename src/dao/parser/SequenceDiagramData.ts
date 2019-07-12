@@ -2,10 +2,12 @@ import { Actor, Signal } from "./model";
 
 export default class SequenceDiagramData {
 
+    actorOrder: number;
     actors: Actor[];
     signals: Signal[];
 
     constructor() {
+        this.actorOrder = 0;
         this.actors = [];
         this.signals = [];
     }
@@ -13,9 +15,10 @@ export default class SequenceDiagramData {
     getOrCreate = function(name: string, createdBySignal: boolean) {
         var actor = this.actors[name];
         if(!actor) {
-            console.log(`Identified actor : ${name}`);
-            actor = new Actor(name, createdBySignal);
+            console.log(`Identified actor #${this.actorOrder}: ${name}`);
+            actor = new Actor(this.actorOrder, name, createdBySignal);
             this.actors[name] = actor;
+            this.actorOrder++;
         } 
         return actor;
     }
