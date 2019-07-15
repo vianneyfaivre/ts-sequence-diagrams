@@ -13,12 +13,11 @@
             `
             A->*B: req_AB
             B-->A: resp_BA
-            A->B: req_AB
-            B->*C: req_BC
-            C-->B: resp_CB
-            destroy C
+            destroy B
+
+            A->*B: req_AB
             B-->A: resp_BA
-            destroy A
+            destroy B
             `;
             var sequenceDiagram = new SequenceDiagram();
             sequenceDiagram.load(input);

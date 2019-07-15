@@ -5,31 +5,26 @@
     </head>
 
     <body>
-        <svg id="diagram-container" style="width: 5000px; height: 5000px"></svg>
+        <svg id="diagram-container"></svg>
         
         <script src="../dist/bundle.js"></script>
         <script>
             var input = 
             `
-            Participant A
-            Participant B
-            Participant C
-            
-            note left of A: Each application = one folder that contains application*.properties files
-            A->*B: Run script
-            B->A: Read root folder (property "metadata.root-folder")
-            A-->B: folders
+            A->*B: req_AB
+            B->A: req_BA
+            A-->B: resp_AB
             loop for each folder
-                B->A: Get application*.properties
-                A-->B: properties
+                B->A: req_BA
+                A-->B: resp_AB
                 loop for each file
-                    B->B: Replace placeholders
-                    B->B: Extract interesting properties
+                    B->B: req_BB
+                    B->B: req_BB
                 end
-                B->B: Transform data to Elastic format
-                B->C: Put data into app-meta index
+                B->B: req_BB
+                B->C: req_BC
             end
-            B-->A: Success
+            B-->A: resp_BA
             destroy B
             `;
             var sequenceDiagram = new SequenceDiagram();

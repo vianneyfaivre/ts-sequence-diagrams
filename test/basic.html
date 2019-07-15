@@ -5,23 +5,23 @@
     </head>
 
     <body>
-        <svg id="diagram-container" style="width: 5000px; height: 5000px"></svg>
+        <svg id="diagram-container"></svg>
         
         <script src="../dist/bundle.js"></script>
         <script>
             var input = 
             `
-            Vianney->Server: GET /ping
-            Server->Backend: hey you
-            Backend-->Server: what?
-            Server->Backend: ping
-            Backend->Backend: process
-            Backend-->Server: pong
-            Server->Server: process
-            Server-->Vianney: pong
-            Vianney->Vianney: process
-            Vianney->Backend: shutdown
-            Backend-->Vianney: zzzz
+            A->B: req_AB
+            B->C: req_BC
+            C-->B: resp_CB
+            B->C: req_BC
+            C->C: req_CC
+            C-->B: resp_CB
+            B->B: req_BB
+            B-->A: resp_BA
+            A->A: req_AA
+            A->C: req_AC
+            C-->A: resp_CA
             `;
             var sequenceDiagram = new SequenceDiagram();
             sequenceDiagram.load(input);

@@ -3,16 +3,24 @@
 ## TODO
 
 Features:
-* Loops
-* Notes
-* Handle incorrect inputs
-* Participants order
 * Diagram title
+* Loops
+* Participants order
+* Notes
 * Actor destroyed then recreated
 
+Tech Features:
+* Error handling
+  * use exceptions
+  * use error codes
+* Automate the grammar build (use make)
+* use https://svgjs.com instead of snap
+* silent logs
+
 Bugs:
+* Double Destroy
+* Handle incorrect inputs
 * trim messages
-* tests use A,B,C,...
 
 Site:
 * Textarea + SVG 
@@ -21,14 +29,7 @@ Site:
 * Export as PNG
 * About Page
 * Support Page
-
-Tech stuff:
-* Error handling
-  * use exceptions
-  * use error codes
-* Automate the grammar build (use make)
-* use https://svgjs.com instead of snap
-* silent logs
+* Save in localStorage
 
 ## Build the grammar
 
