@@ -3,26 +3,26 @@
 ## TODO
 
 Features:
-
-* Text boundaries
 * Loops
 * Notes
 * Handle incorrect inputs
-* Compute SVG size based on what has to be drawn
 * Participants order
 * Diagram title
-* Draw on input/textarea change
 * Actor destroyed then recreated
 
 Bugs:
-
-* long text bug see /long_text.html
-* req from B to A see complex.html
 * trim messages
-* padding for root svg object
+* tests use A,B,C,...
+
+Site:
+* Textarea + SVG 
+* Draw on input/textarea change
+* Clickable samples
+* Export as PNG
+* About Page
+* Support Page
 
 Tech stuff:
-
 * Error handling
   * use exceptions
   * use error codes
@@ -36,7 +36,7 @@ Build the grammar using Jison:
 
 ```
 npm install jison -g
-jison src/dao/grammar/SequenceDiagram.jison --outfile src/dao/grammar/SequenceDiagram.js --module-type js
+npm run build-grammar
 ```
 
 To export the generated code as a module, update the end of SequenceDiagram.js:

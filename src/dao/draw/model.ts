@@ -117,6 +117,9 @@ export enum TextOption {
 
 export class Dimensions {
 
+    /* X and Y padding of the whole SVG */
+    static SVG_PADDING = 10;
+
     /* Y distance between two signals */
     static DISTANCE_BETWEEN_SIGNALS = 50;
 
@@ -149,7 +152,10 @@ export class Dimensions {
 
     /* Signal text Y padding */
     static SIGNAL_TEXT_PADDING_Y = 5;
-    static SIGNAL_X_PADDING = 10;
 
+    /* Signal X padding */
+    static SIGNAL_OVERLAPPING_ACTOR_X_OFFSET = 10;
+
+    /* Actor Creation Signal line width */
     static SIGNAL_CREATION_WIDTH = 100;
 }

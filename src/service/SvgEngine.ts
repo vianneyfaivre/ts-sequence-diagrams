@@ -20,7 +20,7 @@ export default class SvgEngine {
         const shapesGenerator = new ShapesGenerator(container);
 
         this.itemsGenerator = new ItemsGenerator(shapesGenerator);
-        this.adjustmentsEngine = new AdjustmentsEngine(shapesGenerator);
+        this.adjustmentsEngine = new AdjustmentsEngine(container, shapesGenerator);
 
         this.actors = [];
         this.signals = [];
@@ -132,7 +132,7 @@ export default class SvgEngine {
 
     drawActors(actors: Actor[]) {
 
-        let offsetX = 0;
+        let offsetX = Dimensions.SVG_PADDING;
 
         for (const actorName in actors) {
 
@@ -141,7 +141,10 @@ export default class SvgEngine {
             // Actors created by a signal will be drawn when the signal is being drawn
             if(actor.createdBySignal === false) {
                 console.log(`Drawing Actor '${actor.name}'`);
-                const actorEl = this.itemsGenerator.drawActor(actor, offsetX, 0);
+
+                const actorY = Dimensions.SVG_PADDING;
+                const actorEl = this.itemsGenerator.drawActor(actor, offsetX, actorY);
+                
                 this.actors.push(actorEl);
     
                 offsetX += Dimensions.DISTANCE_BETWEEN_ACTORS;
@@ -164,9 +167,10 @@ export default class SvgEngine {
             allActors += `${actorEl.actor.name}, `;
         }
         
-        console.log(`Actors: ${allActors}`);
+        console.log(`Actors sorted: ${allActors}`);
 
         this.adjustmentsEngine.autoAdjust(actorsSorted);
+        this.adjustmentsEngine.resizeSvg(actorsSorted);
     }
 
     printCurrentState() {

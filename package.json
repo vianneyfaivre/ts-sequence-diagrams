@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "webpack --config webpack.config.js --parallel",
+    "build-grammar": "jison src/dao/grammar/SequenceDiagram.jison --outfile src/dao/grammar/SequenceDiagram.js --module-type js",
     "watch": "webpack --watch",
     "start": "webpack --mode=development --watch && webpack-dev-server"
   },

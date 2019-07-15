@@ -48,7 +48,7 @@ export default class ItemsGenerator {
 
         // Draw text inside rectangle
         var textX = (Dimensions.ACTOR_RECT_WIDTH / 2) + x;
-        var textY = Dimensions.ACTOR_RECT_HEIGHT / 2;
+        var textY = Dimensions.ACTOR_RECT_HEIGHT / 2 + y;
         const text = this.shapesGenerator.drawText(textX, textY, actor.name, [TextOption.CENTERED]);
 
         return new ActorElement(actor, new ActorRect(rect, text));

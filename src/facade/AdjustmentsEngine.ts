@@ -6,51 +6,99 @@ import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
  */
 export default class AdjustmentsEngine {
 
-    constructor(readonly shapesGenerator: ShapesGenerator) {
+    constructor(
+        readonly container: SVGElement,
+        readonly shapesGenerator: ShapesGenerator) {
     }
 
-    autoAdjust(actorsSorted: ActorElement[]) {
+    resizeSvg(actors: ActorElement[]): void {
+
+        console.log("* RESIZING SVG *");
+        
+        const lastActor = actors[actors.length - 1];
+
+        // Compute SVG Width
+        let svgWidth = lastActor.topRect.rect.getBBox().x2;
+        
+        for (const i in lastActor.selfSignals) {
+            const signal = lastActor.selfSignals[i];
+
+            const signalTextX2 = signal.text.getBBox().x + signal.text.getBBox().width;
+            if(signalTextX2 > svgWidth) {
+                svgWidth = signalTextX2;
+            }
+        }
+
+        // Compute SVG Height
+        let svgHeight = 0;
+
+        for (const i in actors) {
+            const actor = actors[i];
+
+            if(actor.bottomRect) {
+                const tmp = actor.bottomRect.rect.getBBox().y + actor.bottomRect.rect.getBBox().height;
+
+                if(tmp > svgHeight) {
+                    svgHeight = tmp;
+                }
+            } 
+            
+            if(actor.cross) {
+                const tmp = actor.cross.line1.getBBox().y2;
+                if(tmp > svgHeight) {
+                    svgHeight = tmp;
+                }
+            }
+            
+            const tmp = actor.line.getBBox().y2; 
+            if(tmp > svgHeight) {
+                svgHeight = tmp;
+            }
+        }
+
+        this.container.style.width = `${svgWidth + Dimensions.SVG_PADDING}px`;
+        this.container.style.height = `${svgHeight + Dimensions.SVG_PADDING}px`;
+    }
+
+    autoAdjust(actors: ActorElement[]): void {
 
         // b. Adjust actor top/bottom rectangles
         console.log("* RESIZING ACTOR RECTANGLES *");
-        for (const i in actorsSorted) {
-            const actorEl = actorsSorted[i];
+        for (const i in actors) {
+            const actorEl = actors[i];
 
-            const actorToResize = this.shouldResizeActor(actorEl);
+            const actorToResize = this._shouldResizeActor(actorEl);
             if(actorToResize === true) {
-                this.resizeAndMoveActor(actorEl);
+                this._resizeAndMoveActor(actorEl);
             }
         }
 
         // c. Adjust space between actors
         console.log("* ADJUSTING SPACE BETWEEN ACTORS *");
-        for (const i in actorsSorted) {
-            const actorEl = actorsSorted[i];
-            const nextActor = actorsSorted[+i+1];
+        for (const i in actors) {
+            const actorEl = actors[i];
+            const nextActor = actors[+i+1];
 
-            const [shouldMove, offsetX] = this.shouldMoveActor(actorEl, nextActor, Dimensions.DISTANCE_BETWEEN_ACTORS);
+            const [shouldMove, offsetX] = this._shouldMoveActor(actorEl, nextActor, Dimensions.DISTANCE_BETWEEN_ACTORS);
             if(shouldMove === true) {
-                this.moveActor(nextActor, offsetX);
+                this._moveActor(nextActor, offsetX);
             }
         }
 
         // d. Adjust signals
         console.log(`* ADJUSTING SIGNALS *`);
-        for (const i in actorsSorted) {
+        for (const i in actors) {
 
-            const actorEl = actorsSorted[i];
-            const nextActors = actorsSorted.slice(+i+1);
+            const actorEl = actors[i];
+            const nextActors = actors.slice(+i+1);
 
 
-            this.adjustSignals(actorEl, nextActors);
-            this.updateDestroyedActor(actorEl);
+            this._adjustSignals(actorEl, nextActors);
+            this._updateDestroyedActor(actorEl);
         }
-
-        // TODO Adjust the SVG container size
-        // TODO set svg view box https://vanseodesign.com/web-design/svg-viewbox/
     }
 
-    adjustSignals(actor: ActorElement, nextActors: ActorElement[]) {
+    private _adjustSignals(actor: ActorElement, nextActors: ActorElement[]) {
         const actorSignals = [
             ...actor.selfSignals,
             ...actor.incomingSignals,
@@ -64,17 +112,17 @@ export default class AdjustmentsEngine {
             
             // Move next actor if any of the current actor signals is too long
             if(nextActor){
-                const [shouldMove, offsetX] = this.isSignalTextTooLong(signal, nextActor);
+                const [shouldMove, offsetX] = this._isSignalTextTooLong(signal, nextActor);
                 if(shouldMove === true) {
-                    nextActors.forEach(a => this.moveActor(a, offsetX));
+                    nextActors.forEach(a => this._moveActor(a, offsetX));
                 }
             }
 
-            this.adjustActorSignals(actor);
+            this._adjustActorSignals(actor);
         }
     }
 
-    shouldResizeActor(actor: ActorElement): boolean {
+    private _shouldResizeActor(actor: ActorElement): boolean {
         const resize = actor.topRect.shouldBeResized();
         if(resize === true) {
             return true;
@@ -82,8 +130,8 @@ export default class AdjustmentsEngine {
         return false;
     }
 
-    // closeActor = could be on the right or on the left
-    isSignalTextTooLong(signal: SignalElement, closeActor: ActorElement): [boolean, number] {
+    private _isSignalTextTooLong(signal: SignalElement, closeActor: ActorElement): [boolean, number] {
+        // closeActor = could be on the right or on the left
 
         if(!closeActor) {
             return [false, 0];
@@ -100,7 +148,7 @@ export default class AdjustmentsEngine {
                 const overlaps = (signalTextX1 < nextActorLineX) && (nextActorLineX < signalTextX2);
     
                 if(overlaps === true) {
-                    const offsetX = signalTextX2 - nextActorLineX + Dimensions.SIGNAL_X_PADDING;
+                    const offsetX = signalTextX2 - nextActorLineX + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
                     console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.innerSVG()}`);
                     return [true, offsetX];
                 } 
@@ -117,7 +165,7 @@ export default class AdjustmentsEngine {
                 const overlaps = (signalTextX1 < currentActorLineX) && (currentActorLineX < signalTextX2);
     
                 if(overlaps === true) {
-                    const offsetX = newSignalLength - oldSignalLength + Dimensions.SIGNAL_X_PADDING;
+                    const offsetX = newSignalLength - oldSignalLength + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
                     console.log(`Signal text is too long, it overlaps on actor '${signal.actorB.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.innerSVG()}`);
                     return [true, offsetX];
                 } 
@@ -132,7 +180,7 @@ export default class AdjustmentsEngine {
             const overlaps = (signalTextX1 < nextActorTopRectX) && (nextActorTopRectX < signalTextX2);
 
             if(overlaps === true) {
-                const offsetX = signalTextX2 - nextActorTopRectX + Dimensions.SIGNAL_X_PADDING;
+                const offsetX = signalTextX2 - nextActorTopRectX + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
                 console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}' top rectangle, this actor should be moved ${offsetX}px to the right. Text=${signal.text.innerSVG()}`);
                 return [true, offsetX];
             } 
@@ -141,7 +189,7 @@ export default class AdjustmentsEngine {
         return [false, 0];
     }
 
-    updateDestroyedActor(actor: ActorElement): void {
+    private _updateDestroyedActor(actor: ActorElement): void {
         if(actor.cross && actor.destroyed === true) {
                 
             const lifeLineX = actor.line.getBBox().x;
@@ -171,7 +219,7 @@ export default class AdjustmentsEngine {
         }
     }
 
-    adjustActorSignals(actor: ActorElement): void {
+    private _adjustActorSignals(actor: ActorElement): void {
         const allSignals = [
             ...actor.incomingSignals,
             ...actor.outgoingSignals,
@@ -212,7 +260,7 @@ export default class AdjustmentsEngine {
                         });
     
                         signal.text.attr({
-                            "x": signal.actorA.line.getBBox().x + line1Width + Dimensions.SIGNAL_X_PADDING
+                            "x": signal.actorA.line.getBBox().x + line1Width + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET
                         });
                     }
                 }
@@ -306,7 +354,7 @@ export default class AdjustmentsEngine {
         }
     }
 
-    resizeAndMoveActor(actor: ActorElement): void {
+    private _resizeAndMoveActor(actor: ActorElement): void {
 
         const rectWidth = actor.topRect.text.getBBox().width + (Dimensions.ACTOR_RECT_MIN_X_PADDING * 2); 
         const lineX = (rectWidth / 2) + actor.topRect.rect.getBBox().x;
@@ -329,7 +377,7 @@ export default class AdjustmentsEngine {
         });
 
         // Move cross
-        this.updateDestroyedActor(actor);
+        this._updateDestroyedActor(actor);
 
         // Resize bottom rect
         if(actor.bottomRect) {
@@ -343,7 +391,7 @@ export default class AdjustmentsEngine {
         }
     }
 
-    shouldMoveActor(actor: ActorElement, nextActor: ActorElement, defaultDistanceBetweenActors: number): [boolean, number] {
+    private _shouldMoveActor(actor: ActorElement, nextActor: ActorElement, defaultDistanceBetweenActors: number): [boolean, number] {
         if(!nextActor) {
             return [false, 0];
         } else {
@@ -389,7 +437,7 @@ export default class AdjustmentsEngine {
         }
     }
 
-    moveActor(actorAfter: ActorElement, offsetX: number): void {
+    private _moveActor(actorAfter: ActorElement, offsetX: number): void {
         console.log(`Moving actor '${actorAfter.actor.name}' ${offsetX}px to the right`);
 
         // Move actor
