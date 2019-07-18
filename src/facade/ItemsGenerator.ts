@@ -1,6 +1,7 @@
 import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption } from "../dao/draw/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
 import { Actor, Signal } from "../dao/parser/model";
+import {Element} from "@svgdotjs/svg.js";
 
 /**
  * Generates sequence diagrams items: Actor, Signal, Note, ...
@@ -89,18 +90,18 @@ export default class ItemsGenerator {
         // Based on that, compute the line x1 and x2 to always have x1 < x2 (thus every line will start from the left and go to the right)
         let lineX1;
         let lineX2;
-        if(actorElA.topRect.rect.getBBox().x < actorElB.topRect.rect.getBBox().x) {
+        if(actorElA.topRect.rect.bbox().x < actorElB.topRect.rect.bbox().x) {
             signalGoingForward = true;
-            lineX1 = (actorElA.topRect.rect.getBBox().width / 2) + actorElA.topRect.rect.getBBox().x;
-            lineX2 = (actorElB.topRect.rect.getBBox().width / 2) + actorElB.topRect.rect.getBBox().x;
+            lineX1 = (actorElA.topRect.rect.bbox().width / 2) + actorElA.topRect.rect.bbox().x;
+            lineX2 = (actorElB.topRect.rect.bbox().width / 2) + actorElB.topRect.rect.bbox().x;
         } else {
             signalGoingForward = false;
-            lineX1 = (actorElB.topRect.rect.getBBox().width / 2) + actorElB.topRect.rect.getBBox().x;
-            lineX2 = (actorElA.topRect.rect.getBBox().width / 2) + actorElA.topRect.rect.getBBox().x;
+            lineX1 = (actorElB.topRect.rect.bbox().width / 2) + actorElB.topRect.rect.bbox().x;
+            lineX2 = (actorElA.topRect.rect.bbox().width / 2) + actorElA.topRect.rect.bbox().x;
         }
 
         // Draw Signal line
-        const lineY = actorElA.topRect.rect.getBBox().h + offsetY;
+        const lineY = actorElA.topRect.rect.bbox().h + offsetY;
         const dottedLine = signal.lineType === LineType.RESPONSE;
 
         const options = [];
@@ -128,9 +129,9 @@ export default class ItemsGenerator {
     _drawSelfSignal(signal: Signal, offsetY: number, actorElA: ActorElement): SignalElement {
 
         // Draw self signal (3 lines)
-        const x1 = (actorElA.topRect.rect.getBBox().width / 2) + actorElA.topRect.rect.getBBox().x;
+        const x1 = (actorElA.topRect.rect.bbox().width / 2) + actorElA.topRect.rect.bbox().x;
         const x2 = x1 + Dimensions.SIGNAL_SELF_WIDTH;
-        const y1 = actorElA.topRect.rect.getBBox().h + offsetY;
+        const y1 = actorElA.topRect.rect.bbox().h + offsetY;
         const y2 = y1 + Dimensions.SIGNAL_SELF_HEIGHT;
         
         const line1 = this.shapesGenerator.drawLine(x1, x2, y1, y1);
@@ -150,9 +151,9 @@ export default class ItemsGenerator {
     drawSignalAndActor(signal: Signal, actorElA: ActorElement, offsetY: number) : [SignalElement, ActorElement] {
 
         // Draw line to Actor rect
-        const signalAX = (actorElA.topRect.rect.getBBox().width / 2) + actorElA.topRect.rect.getBBox().x;
+        const signalAX = (actorElA.topRect.rect.bbox().width / 2) + actorElA.topRect.rect.bbox().x;
         const signalBX = signalAX + Dimensions.SIGNAL_CREATION_WIDTH;
-        const signalY = actorElA.topRect.rect.getBBox().h + offsetY;
+        const signalY = actorElA.topRect.rect.bbox().h + offsetY;
 
         const options = [LineOption.END_MARKER];
         const line = this.shapesGenerator.drawLine(signalAX, signalBX, signalY, signalY, options);
@@ -172,10 +173,10 @@ export default class ItemsGenerator {
         return [signalEl, actorElB];
     }
 
-    destroyActor(actorEl: ActorElement, offsetY: number): [Snap.Element, CrossElement] {
+    destroyActor(actorEl: ActorElement, offsetY: number): [Element, CrossElement] {
         // Draw actor line
-        const x = actorEl.topRect.rect.getBBox().x + (Dimensions.ACTOR_RECT_WIDTH / 2);
-        const y1 = actorEl.topRect.rect.getBBox().y + Dimensions.ACTOR_RECT_HEIGHT;
+        const x = actorEl.topRect.rect.bbox().x + (Dimensions.ACTOR_RECT_WIDTH / 2);
+        const y1 = actorEl.topRect.rect.bbox().y + Dimensions.ACTOR_RECT_HEIGHT;
         const y2 = Dimensions.ACTOR_RECT_HEIGHT + offsetY;
 
         const line = this.shapesGenerator.drawLine(x, x, y1, y2);
@@ -186,10 +187,10 @@ export default class ItemsGenerator {
         return [line, cross];
     }
 
-    _drawLivingActorLineAndRect(actorElement: ActorElement, actorName: string, offsetY: number): [Snap.Element, ActorRect] {
+    _drawLivingActorLineAndRect(actorElement: ActorElement, actorName: string, offsetY: number): [Element, ActorRect] {
         // Draw whole line
-        const lineX = actorElement.topRect.rect.getBBox().x + (Dimensions.ACTOR_RECT_WIDTH / 2);
-        const lineY1 = actorElement.topRect.rect.getBBox().y + Dimensions.ACTOR_RECT_HEIGHT;
+        const lineX = actorElement.topRect.rect.bbox().x + (Dimensions.ACTOR_RECT_WIDTH / 2);
+        const lineY1 = actorElement.topRect.rect.bbox().y + Dimensions.ACTOR_RECT_HEIGHT;
         const lineY2 = offsetY + Dimensions.ACTOR_RECT_HEIGHT;
         const line = this.shapesGenerator.drawLine(lineX, lineX, lineY1, lineY2);
 

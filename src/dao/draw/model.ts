@@ -1,4 +1,4 @@
-import * as Snap from 'snapsvg';
+import {Element} from "@svgdotjs/svg.js";
 import { Actor } from '../parser/model';
 
 export class ActorElement {
@@ -7,7 +7,7 @@ export class ActorElement {
     readonly outgoingSignals: SignalElement[];
     readonly selfSignals: SignalElement[];
     bottomRect: ActorRect;
-    line: Snap.Element;
+    line: Element;
     destroyed: boolean;
     cross: CrossElement;
 
@@ -33,43 +33,43 @@ export class ActorElement {
 
 export class CrossElement {
     constructor(
-        readonly line1: Snap.Element, 
-        readonly line2: Snap.Element
+        readonly line1: Element, 
+        readonly line2: Element
     ) {}
 } 
 
 export class ActorRect {
 
     constructor(
-        readonly rect: Snap.Element, 
-        readonly text: Snap.Element
+        readonly rect: Element, 
+        readonly text: Element
     ) {}
 
     shouldBeResized() : boolean {
-        return this.text.getBBox().width >= this.rect.getBBox().width;
+        return this.text.bbox().width >= this.rect.bbox().width;
     }
 }
 
 export class SignalElement {
 
-    static forward(line: Snap.Element, lineType: LineType, signalType: SignalType, text: Snap.Element, actorA: ActorElement, actorB: ActorElement): SignalElement {
+    static forward(line: Element, lineType: LineType, signalType: SignalType, text: Element, actorA: ActorElement, actorB: ActorElement): SignalElement {
         return new SignalElement(line, [], lineType, signalType, text, actorA, actorB);
     }
     
-    static backward(line: Snap.Element, lineType: LineType, text: Snap.Element, actorA: ActorElement, actorB: ActorElement): SignalElement {
+    static backward(line: Element, lineType: LineType, text: Element, actorA: ActorElement, actorB: ActorElement): SignalElement {
         return new SignalElement(line, [], lineType, SignalType.SIMPLE, text, actorA, actorB);
     }
 
-    static self(lines: Snap.Element[], lineType: LineType, text: Snap.Element, actor: ActorElement): SignalElement {
+    static self(lines: Element[], lineType: LineType, text: Element, actor: ActorElement): SignalElement {
         return new SignalElement(null, lines, lineType, SignalType.SIMPLE, text, actor, actor);
     }
 
     private constructor(
-        readonly line: Snap.Element,
-        readonly lines: Snap.Element[], // empty unless signal==self
+        readonly line: Element,
+        readonly lines: Element[], // empty unless signal==self
         readonly lineType: LineType,
         readonly signalType: SignalType,
-        readonly text: Snap.Element,
+        readonly text: Element,
         readonly actorA: ActorElement,
         readonly actorB: ActorElement
     ) {}
@@ -82,9 +82,9 @@ export class SignalElement {
         const toSelf = this.actorA.actor.name === this.actorB.actor.name;
         
         if(toSelf === true) {
-            return `Self-Signal '${this.actorA.actor.name}': '${this.text.innerSVG()}'`;
+            return `Self-Signal '${this.actorA.actor.name}': '${this.text.toString()}'`;
         } else {
-            return `Signal from '${this.actorA.actor.name}' to '${this.actorB.actor.name}': '${this.text.innerSVG()}'`;
+            return `Signal from '${this.actorA.actor.name}' to '${this.actorB.actor.name}': '${this.text.toString()}'`;
         }
     }
 }

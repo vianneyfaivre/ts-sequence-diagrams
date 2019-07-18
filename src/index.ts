@@ -1,7 +1,8 @@
 
-import SvgEngine from "./service/SvgEngine";
+import { SvgEngine } from "./service/SvgEngine";
 import ParserEngine from "./facade/ParserEngine";
-import SequenceDiagramData from "./dao/parser/SequenceDiagramData";
+import { SequenceDiagramData } from "./dao/parser/SequenceDiagramData";
+import { Svg, SVG } from "@svgdotjs/svg.js";
 
 export default class SequenceDiagram {
 
@@ -14,12 +15,11 @@ export default class SequenceDiagram {
     }
 
     load(input: string) {
-        console.log("** PARSING **")
+        console.log("** PARSING **");
         this.data = this.parser.load(input);
     }
 
     draw(htmlElementId: string) {
-        console.log("** DRAWING **");
         this.svgEngine = new SvgEngine(htmlElementId);
         this.svgEngine.drawActors(this.data.actors);
         this.svgEngine.drawSignals(this.data.signals);

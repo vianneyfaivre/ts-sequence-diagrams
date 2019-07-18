@@ -1,4 +1,4 @@
-import * as Snap from 'snapsvg';
+import {Svg, Element, Container} from "@svgdotjs/svg.js";
 import { CrossElement, LineOption, TextOption, Dimensions } from './model';
 
 /**
@@ -6,14 +6,14 @@ import { CrossElement, LineOption, TextOption, Dimensions } from './model';
  */
 export class ShapesGenerator {
     
-    paper: Snap.Paper;
-    readonly endMarker: Snap.Element;
-    readonly startMarker: Snap.Element;
+    readonly paper: Svg;
+    readonly endMarker: Element;
+    readonly startMarker: Element;
 
-    constructor(container: SVGElement) {
-        this.paper = Snap(container);
-        this.endMarker = this.paper.path('M 0 0   L 5 2.5   L 0 5   z').marker(0, 0, 5, 5, 5, 2.5);
-        this.startMarker = this.paper.path('M 0 2.5   L 5 5   L 5 0   z').marker(0, 0, 5, 5, 0, 2.5);
+    constructor(container: HTMLElement) {
+        this.paper = new Svg().addTo(container);
+        this.endMarker = this.paper.path('M 0 0   L 5 2.5   L 0 5   z')//.marker(5, 5, 5, 2.5);
+        this.startMarker = this.paper.path('M 0 2.5   L 5 5   L 5 0   z')//.marker(5, 5, 0, 2.5);
     }
 
     drawLine(x1: number, x2: number, y1: number, y2: number, options?: LineOption[]) {
@@ -45,8 +45,9 @@ export class ShapesGenerator {
         return line;
     }
 
-    drawRect(x: number, y: number, w: number, h: number) {
-        return this.paper.rect(x, y, w, h)
+    drawRect(x: number, y: number, w: number, h: number): Element {
+        return this.paper.rect(w, h)
+                            .move(x, y)
                             .attr({
                                 'stroke': 'black',
                                 'stroke-width': 2,
@@ -55,7 +56,8 @@ export class ShapesGenerator {
     }
 
     drawText(x: number, y: number, text: string, options?: TextOption[]) {
-        var t = this.paper.text(x, y, text);
+
+        var t = this.paper.text('').tspan(text).attr({ x: x, y: y });
 
         if(options && options.includes(TextOption.CENTERED)) {
             t.attr({
@@ -89,14 +91,14 @@ export class ShapesGenerator {
         return new CrossElement(line1, line2);
     }
 
-    translateElements(elements: Snap.Element[], offsetX: number) {
+    translateElements(elements: Element[], offsetX: number) {
         // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
         elements
             .filter(element => element != null)
             .forEach(element => this._translateElement(element, offsetX));
     }
 
-    _translateElement(element: Snap.Element, offsetX: number) {
+    _translateElement(element: Element, offsetX: number) {
 
         let fullOffsetX = offsetX;
 

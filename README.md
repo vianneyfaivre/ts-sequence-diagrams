@@ -15,6 +15,8 @@ Tech Features:
   * use error codes
 * Automate the grammar build (use make)
 * use https://svgjs.com instead of snap
+  * then remove webpack config
+  * then remove imports loader (maybe)
 * silent logs
 
 Bugs:
@@ -26,7 +28,7 @@ Site:
 * Textarea + SVG 
 * Draw on input/textarea change
 * Clickable samples
-* Export as PNG
+* Export as PNG / SVG
 * About Page
 * Support Page
 * Save in localStorage

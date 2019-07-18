@@ -7,7 +7,7 @@ import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
 export default class AdjustmentsEngine {
 
     constructor(
-        readonly container: SVGElement,
+        readonly container: HTMLElement,
         readonly shapesGenerator: ShapesGenerator) {
     }
 
@@ -18,12 +18,12 @@ export default class AdjustmentsEngine {
         const lastActor = actors[actors.length - 1];
 
         // Compute SVG Width
-        let svgWidth = lastActor.topRect.rect.getBBox().x2;
+        let svgWidth = lastActor.topRect.rect.bbox().x2;
         
         for (const i in lastActor.selfSignals) {
             const signal = lastActor.selfSignals[i];
 
-            const signalTextX2 = signal.text.getBBox().x + signal.text.getBBox().width;
+            const signalTextX2 = signal.text.bbox().x + signal.text.bbox().width;
             if(signalTextX2 > svgWidth) {
                 svgWidth = signalTextX2;
             }
@@ -36,7 +36,7 @@ export default class AdjustmentsEngine {
             const actor = actors[i];
 
             if(actor.bottomRect) {
-                const tmp = actor.bottomRect.rect.getBBox().y + actor.bottomRect.rect.getBBox().height;
+                const tmp = actor.bottomRect.rect.bbox().y + actor.bottomRect.rect.bbox().height;
 
                 if(tmp > svgHeight) {
                     svgHeight = tmp;
@@ -44,20 +44,29 @@ export default class AdjustmentsEngine {
             } 
             
             if(actor.cross) {
-                const tmp = actor.cross.line1.getBBox().y2;
+                const tmp = actor.cross.line1.bbox().y2;
                 if(tmp > svgHeight) {
                     svgHeight = tmp;
                 }
             }
             
-            const tmp = actor.line.getBBox().y2; 
+            const tmp = actor.line.bbox().y2; 
             if(tmp > svgHeight) {
                 svgHeight = tmp;
             }
         }
 
+        // Size parent <div>
         this.container.style.width = `${svgWidth + Dimensions.SVG_PADDING}px`;
         this.container.style.height = `${svgHeight + Dimensions.SVG_PADDING}px`;
+
+        // Size <svg>
+        const svg: SVGElement = this.container.getElementsByTagName("svg")[0];
+        if(svg) {
+            svg.style.width = `${svgWidth + Dimensions.SVG_PADDING}px`;
+            svg.style.height = `${svgHeight + Dimensions.SVG_PADDING}px`;
+        }
+
     }
 
     autoAdjust(actors: ActorElement[]): void {
@@ -141,47 +150,47 @@ export default class AdjustmentsEngine {
             
             // Check if the text overlaps the next actor life line
             if(signal.lineType === LineType.REQUEST) {
-                const nextActorLineX = closeActor.line.getBBox().x;
-                const signalTextX1 = signal.text.getBBox().x;
-                const signalTextX2 = signalTextX1 + signal.text.getBBox().width;
+                const nextActorLineX = closeActor.line.bbox().x;
+                const signalTextX1 = signal.text.bbox().x;
+                const signalTextX2 = signalTextX1 + signal.text.bbox().width;
     
                 const overlaps = (signalTextX1 < nextActorLineX) && (nextActorLineX < signalTextX2);
     
                 if(overlaps === true) {
                     const offsetX = signalTextX2 - nextActorLineX + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
-                    console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.innerSVG()}`);
+                    console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.toString()}`);
                     return [true, offsetX];
                 } 
             }
             // Check if the text overlaps the current actor life line
             else if(signal.lineType === LineType.RESPONSE) {
-                const currentActorLineX = signal.actorB.line.getBBox().x;
-                const signalTextX1 = signal.text.getBBox().x;
-                const signalTextX2 = signalTextX1 + signal.text.getBBox().width;
+                const currentActorLineX = signal.actorB.line.bbox().x;
+                const signalTextX1 = signal.text.bbox().x;
+                const signalTextX2 = signalTextX1 + signal.text.bbox().width;
 
-                const oldSignalLength = signal.actorA.line.getBBox().x - signal.actorB.line.getBBox().x;
+                const oldSignalLength = signal.actorA.line.bbox().x - signal.actorB.line.bbox().x;
                 const newSignalLength = signalTextX2 - signalTextX1;
 
                 const overlaps = (signalTextX1 < currentActorLineX) && (currentActorLineX < signalTextX2);
     
                 if(overlaps === true) {
                     const offsetX = newSignalLength - oldSignalLength + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
-                    console.log(`Signal text is too long, it overlaps on actor '${signal.actorB.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.innerSVG()}`);
+                    console.log(`Signal text is too long, it overlaps on actor '${signal.actorB.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.toString()}`);
                     return [true, offsetX];
                 } 
             }
         } 
         // Check if the text overlaps the next actor top rect
         else if(signal.signalType === SignalType.ACTOR_CREATION) {
-            const nextActorTopRectX = closeActor.topRect.rect.getBBox().x;
-            const signalTextX1 = signal.text.getBBox().x;
-            const signalTextX2 = signalTextX1 + signal.text.getBBox().width;
+            const nextActorTopRectX = closeActor.topRect.rect.bbox().x;
+            const signalTextX1 = signal.text.bbox().x;
+            const signalTextX2 = signalTextX1 + signal.text.bbox().width;
 
             const overlaps = (signalTextX1 < nextActorTopRectX) && (nextActorTopRectX < signalTextX2);
 
             if(overlaps === true) {
                 const offsetX = signalTextX2 - nextActorTopRectX + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
-                console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}' top rectangle, this actor should be moved ${offsetX}px to the right. Text=${signal.text.innerSVG()}`);
+                console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}' top rectangle, this actor should be moved ${offsetX}px to the right. Text=${signal.text.toString()}`);
                 return [true, offsetX];
             } 
         } 
@@ -192,12 +201,12 @@ export default class AdjustmentsEngine {
     private _updateDestroyedActor(actor: ActorElement): void {
         if(actor.cross && actor.destroyed === true) {
                 
-            const lifeLineX = actor.line.getBBox().x;
+            const lifeLineX = actor.line.bbox().x;
             
-            const oldLineX1 = actor.cross.line1.getBBox().x;
-            const oldLineX2 = actor.cross.line1.getBBox().x2;
+            const oldLineX1 = actor.cross.line1.bbox().x;
+            const oldLineX2 = actor.cross.line1.bbox().x2;
 
-            const crossWidth = actor.cross.line1.getBBox().width;
+            const crossWidth = actor.cross.line1.bbox().width;
             
             const newLineX1 = lifeLineX - (crossWidth / 2);
             const newLineX2 = lifeLineX + (crossWidth / 2);
@@ -237,43 +246,43 @@ export default class AdjustmentsEngine {
                     const line2 = signal.lines[1];
                     const line3 = signal.lines[2];
                     
-                    const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== line1.getBBox().x) 
-                        || (signal.actorA.line.getBBox().x !== line3.getBBox().x2);
+                    const shouldBeAdjusted = (signal.actorA.line.bbox().x !== line1.bbox().x) 
+                        || (signal.actorA.line.bbox().x !== line3.bbox().x2);
     
                     if(shouldBeAdjusted === true) {
-                        console.log(`Adjusting '${signal.actorA.actor.name}' self signal : ${signal.text.innerSVG()}`);
-                        const line1Width = line1.getBBox().width;
+                        console.log(`Adjusting '${signal.actorA.actor.name}' self signal : ${signal.text.toString()}`);
+                        const line1Width = line1.bbox().width;
 
                         line1.attr({
-                            "x1": signal.actorA.line.getBBox().x,
-                            "x2": signal.actorA.line.getBBox().x + line1Width
+                            "x1": signal.actorA.line.bbox().x,
+                            "x2": signal.actorA.line.bbox().x + line1Width
                         });
 
                         line2.attr({
-                            "x1": signal.actorA.line.getBBox().x + line1Width,
-                            "x2": signal.actorA.line.getBBox().x + line1Width
+                            "x1": signal.actorA.line.bbox().x + line1Width,
+                            "x2": signal.actorA.line.bbox().x + line1Width
                         });
 
                         line3.attr({
-                            "x1": signal.actorA.line.getBBox().x + line1Width,
-                            "x2": signal.actorA.line.getBBox().x
+                            "x1": signal.actorA.line.bbox().x + line1Width,
+                            "x2": signal.actorA.line.bbox().x
                         });
     
                         signal.text.attr({
-                            "x": signal.actorA.line.getBBox().x + line1Width + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET
+                            "x": signal.actorA.line.bbox().x + line1Width + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET
                         });
                     }
                 }
                 else if(signal.lineType === LineType.REQUEST) {
 
-                    const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== signal.line.getBBox().x) 
-                                            || (signal.actorB.line.getBBox().x !== signal.line.getBBox().x2);
+                    const shouldBeAdjusted = (signal.actorA.line.bbox().x !== signal.line.bbox().x) 
+                                            || (signal.actorB.line.bbox().x !== signal.line.bbox().x2);
 
                     // if(shouldBeAdjusted === true) {
-                        // console.log(`Adjusting request signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
+                        // console.log(`Adjusting request signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.toString()}`);
     
-                        const lineX1 = signal.actorA.line.getBBox().x;
-                        const lineX2 = signal.actorB.line.getBBox().x;
+                        const lineX1 = signal.actorA.line.bbox().x;
+                        const lineX2 = signal.actorB.line.bbox().x;
 
                         if(lineX1 < lineX2) {
                             signal.line.attr({
@@ -290,7 +299,7 @@ export default class AdjustmentsEngine {
                                 "x2": lineX1
                             });
                             
-                            const textX = lineX1 - Dimensions.SIGNAL_TEXT_PADDING_X - signal.text.getBBox().w;
+                            const textX = lineX1 - Dimensions.SIGNAL_TEXT_PADDING_X - signal.text.bbox().w;
 
                             signal.text.attr({
                                 "x": textX
@@ -299,32 +308,32 @@ export default class AdjustmentsEngine {
                     // }
                 } 
                 else if(signal.lineType === LineType.RESPONSE){
-                    const shouldBeAdjusted = (signal.actorB.line.getBBox().x !== signal.line.getBBox().x) 
-                                             || (signal.actorA.line.getBBox().x !== signal.line.getBBox().x2);
+                    const shouldBeAdjusted = (signal.actorB.line.bbox().x !== signal.line.bbox().x) 
+                                             || (signal.actorA.line.bbox().x !== signal.line.bbox().x2);
 
                     // if(shouldBeAdjusted === true) {
-                        // console.log(`Adjusting response signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
+                        // console.log(`Adjusting response signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.toString()}`);
     
-                        const lineX1 = signal.actorA.line.getBBox().x;
-                        const lineX2 = signal.actorB.line.getBBox().x;
+                        const lineX1 = signal.actorA.line.bbox().x;
+                        const lineX2 = signal.actorB.line.bbox().x;
 
                         if(lineX1 < lineX2) {
                             signal.line.attr({
-                                "x1": signal.actorA.line.getBBox().x,
-                                "x2": signal.actorB.line.getBBox().x
+                                "x1": signal.actorA.line.bbox().x,
+                                "x2": signal.actorB.line.bbox().x
                             });
 
-                            const textX = Dimensions.SIGNAL_TEXT_PADDING_X + signal.actorA.line.getBBox().x;
+                            const textX = Dimensions.SIGNAL_TEXT_PADDING_X + signal.actorA.line.bbox().x;
                             signal.text.attr({
                                 "x": textX
                             });
                         } else {
                             signal.line.attr({
-                                "x1": signal.actorB.line.getBBox().x,
-                                "x2": signal.actorA.line.getBBox().x
+                                "x1": signal.actorB.line.bbox().x,
+                                "x2": signal.actorA.line.bbox().x
                             });
 
-                            const textX = lineX1 - signal.text.getBBox().width - Dimensions.SIGNAL_TEXT_PADDING_X;
+                            const textX = lineX1 - signal.text.bbox().width - Dimensions.SIGNAL_TEXT_PADDING_X;
                             signal.text.attr({
                                 "x": textX
                             });
@@ -334,19 +343,19 @@ export default class AdjustmentsEngine {
             } 
             else if (signal.signalType === SignalType.ACTOR_CREATION) {
 
-                const shouldBeAdjusted = (signal.actorA.line.getBBox().x !== signal.line.getBBox().x) 
-                                      || (signal.actorB.topRect.rect.getBBox().x !== signal.line.getBBox().x2) 
+                const shouldBeAdjusted = (signal.actorA.line.bbox().x !== signal.line.bbox().x) 
+                                      || (signal.actorB.topRect.rect.bbox().x !== signal.line.bbox().x2) 
 
                 if(shouldBeAdjusted === true) {
-                    // console.log(`Adjusting creation signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.innerSVG()}`);
+                    // console.log(`Adjusting creation signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.toString()}`);
 
                     signal.line.attr({
-                        "x1": signal.actorA.line.getBBox().x,
-                        "x2": signal.actorB.topRect.rect.getBBox().x
+                        "x1": signal.actorA.line.bbox().x,
+                        "x2": signal.actorB.topRect.rect.bbox().x
                     });
     
                     signal.text.attr({
-                        "x": Dimensions.ACTOR_RECT_MIN_X_PADDING + signal.actorA.line.getBBox().x
+                        "x": Dimensions.ACTOR_RECT_MIN_X_PADDING + signal.actorA.line.bbox().x
                     });
                 }
                 
@@ -356,9 +365,9 @@ export default class AdjustmentsEngine {
 
     private _resizeAndMoveActor(actor: ActorElement): void {
 
-        const rectWidth = actor.topRect.text.getBBox().width + (Dimensions.ACTOR_RECT_MIN_X_PADDING * 2); 
-        const lineX = (rectWidth / 2) + actor.topRect.rect.getBBox().x;
-        const offsetX = lineX - actor.line.getBBox().x;
+        const rectWidth = actor.topRect.text.bbox().width + (Dimensions.ACTOR_RECT_MIN_X_PADDING * 2); 
+        const lineX = (rectWidth / 2) + actor.topRect.rect.bbox().x;
+        const offsetX = lineX - actor.line.bbox().x;
 
         console.log(`Resizing actor rectangles ${actor.actor.name} to ${rectWidth}px and moving line to x=${lineX}`);
 
@@ -396,8 +405,8 @@ export default class AdjustmentsEngine {
             return [false, 0];
         } else {
 
-            const rectDefaultSized = (actor.topRect.rect.getBBox().width === Dimensions.ACTOR_RECT_WIDTH) && (nextActor.topRect.rect.getBBox().width === Dimensions.ACTOR_RECT_WIDTH);
-            const actorDefaultDistanced = (nextActor.line.getBBox().x - actor.line.getBBox().x) === defaultDistanceBetweenActors;
+            const rectDefaultSized = (actor.topRect.rect.bbox().width === Dimensions.ACTOR_RECT_WIDTH) && (nextActor.topRect.rect.bbox().width === Dimensions.ACTOR_RECT_WIDTH);
+            const actorDefaultDistanced = (nextActor.line.bbox().x - actor.line.bbox().x) === defaultDistanceBetweenActors;
             
             if(rectDefaultSized === true && actorDefaultDistanced === true) {
                 return [false, 0];
@@ -405,8 +414,8 @@ export default class AdjustmentsEngine {
 
             const defaultDistanceBetweenRect = defaultDistanceBetweenActors - Dimensions.ACTOR_RECT_WIDTH;
 
-            const actorRightX = actor.topRect.rect.getBBox().x + actor.topRect.rect.getBBox().width;
-            const nextActorLeftX = nextActor.topRect.rect.getBBox().x;
+            const actorRightX = actor.topRect.rect.bbox().x + actor.topRect.rect.bbox().width;
+            const nextActorLeftX = nextActor.topRect.rect.bbox().x;
 
             const distance = nextActorLeftX - actorRightX;
 
@@ -423,10 +432,10 @@ export default class AdjustmentsEngine {
                 console.log(`Actor ${nextActor.actor.name} is behind ${actor.actor.name}, so it should be moved to x=${nextActorNewLeftX} (offset ${offsetX}px to the right)`);
                 return [true, offsetX];
             } else {
-                const rectAWidth = actor.topRect.rect.getBBox().width;
-                const rectBWidth = nextActor.topRect.rect.getBBox().width; 
-                const rectAX = actor.topRect.rect.getBBox().x;
-                const rectBX = nextActor.topRect.rect.getBBox().x;
+                const rectAWidth = actor.topRect.rect.bbox().width;
+                const rectBWidth = nextActor.topRect.rect.bbox().width; 
+                const rectAX = actor.topRect.rect.bbox().x;
+                const rectBX = nextActor.topRect.rect.bbox().x;
 
                 const distAB = (rectBX + rectBWidth/2) - (rectAX + rectAWidth/2);
                 const offsetX = distAB - rectAWidth/2 - rectBWidth/2;

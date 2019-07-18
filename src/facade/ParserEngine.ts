@@ -1,5 +1,5 @@
 import Parser from "../dao/parser/Parser";
-import SequenceDiagramData from "../dao/parser/SequenceDiagramData";
+import {SequenceDiagramData } from "../dao/parser/SequenceDiagramData";
 
 export default class ParserEngine {
 
@@ -10,8 +10,6 @@ export default class ParserEngine {
     }
 
     load(input: string): SequenceDiagramData {
-        console.log("** PARSING **")
-        
         const el = document.getElementById(input);
         let data;
 

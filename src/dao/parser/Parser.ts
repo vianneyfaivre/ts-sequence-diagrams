@@ -1,4 +1,4 @@
-import SequenceDiagramData from './SequenceDiagramData';
+import {SequenceDiagramData} from './SequenceDiagramData';
 import SequenceDiagram from '../grammar/SequenceDiagram';
 
 export default class Parser {
