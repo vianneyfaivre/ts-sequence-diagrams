@@ -1,4 +1,4 @@
-import {Svg, Element, Container} from "@svgdotjs/svg.js";
+import {Svg, Element, Container, Marker} from "@svgdotjs/svg.js";
 import { CrossElement, LineOption, TextOption, Dimensions } from './model';
 
 /**
@@ -7,13 +7,21 @@ import { CrossElement, LineOption, TextOption, Dimensions } from './model';
 export class ShapesGenerator {
     
     readonly paper: Svg;
-    readonly endMarker: Element;
-    readonly startMarker: Element;
+    readonly startMarker: Marker;
+    readonly endMarker: Marker;
 
     constructor(container: HTMLElement) {
         this.paper = new Svg().addTo(container);
-        this.endMarker = this.paper.path('M 0 0   L 5 2.5   L 0 5   z')//.marker(5, 5, 5, 2.5);
-        this.startMarker = this.paper.path('M 0 2.5   L 5 5   L 5 0   z')//.marker(5, 5, 0, 2.5);
+        this.startMarker = this.paper.marker(5, 5, (add) => {
+            add.path('M 0 2.5   L 5 5   L 5 0   z');
+            add.ref(0, 2.5);
+        });
+        this.endMarker = this.paper.marker(5, 5, (add) => {
+            add.path('M 0 0   L 5 2.5   L 0 5   z');
+            add.ref(5, 2.5);
+        });
+        // this.startMarker = this.paper.path('M 0 2.5   L 5 5   L 5 0   z').marker(0, 0, 5, 5, 0, 2.5);
+        // this.endMarker = this.paper.path('M 0 0   L 5 2.5   L 0 5   z').marker(0, 0, 5, 5, 5, 2.5);
     }
 
     drawLine(x1: number, x2: number, y1: number, y2: number, options?: LineOption[]) {
@@ -24,16 +32,12 @@ export class ShapesGenerator {
             "stroke-width": 2
         });
 
-        if(options && options.includes(LineOption.END_MARKER)) {
-            line.attr({
-                'markerEnd': this.endMarker
-            });
-        }
-
         if(options && options.includes(LineOption.START_MARKER)) {
-            line.attr({
-                'markerStart': this.startMarker
-            });
+            line.marker('start', this.startMarker);
+        }
+        
+        if(options && options.includes(LineOption.END_MARKER)) {
+            line.marker('end', this.endMarker);
         }
 
         if(options && options.includes(LineOption.DOTTED)) {

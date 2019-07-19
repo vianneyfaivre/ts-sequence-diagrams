@@ -2,7 +2,6 @@
 import { SvgEngine } from "./service/SvgEngine";
 import ParserEngine from "./facade/ParserEngine";
 import { SequenceDiagramData } from "./dao/parser/SequenceDiagramData";
-import { Svg, SVG } from "@svgdotjs/svg.js";
 
 export default class SequenceDiagram {
 
