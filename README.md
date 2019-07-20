@@ -8,15 +8,13 @@ Features:
 * Participants order
 * Notes
 * Actor destroyed then recreated
+* Different themes
 
 Tech Features:
 * Error handling
   * use exceptions
   * use error codes
 * Automate the grammar build (use make)
-* use https://svgjs.com instead of snap
-  * then remove webpack config
-  * then remove imports loader (maybe)
 * silent logs
 
 Bugs:
@@ -53,7 +51,7 @@ export default SequenceDiagram;
 ## Run
 
 ```
-npm run-script watch
+npm run start
 ```
 
 Open `./test/basic.html`
