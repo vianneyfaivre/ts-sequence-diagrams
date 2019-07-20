@@ -13,18 +13,11 @@ module.exports = {
         test: /\.tsx?$/,
         use: 'ts-loader',
         exclude: /node_modules/
-      },
-      {
-        test: require.resolve('snapsvg/dist/snap.svg.js'),
-        use: 'imports-loader?this=>window,fix=>module.exports=0',
-      },
+      }
     ]
   },
   resolve: {
-    extensions: [ '.tsx', '.ts', '.js' ],
-    alias: {
-      snapsvg: 'snapsvg/dist/snap.svg.js',
-    },
+    extensions: [ '.tsx', '.ts', '.js' ]
   },
   output: {
     filename: 'bundle.js',

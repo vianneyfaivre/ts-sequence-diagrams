@@ -15,10 +15,9 @@
   "author": "Vianney FAIVRE",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "snapsvg": "^0.5.1"
+    "@svgdotjs/svg.js": "^3.0.13"
   },
   "devDependencies": {
-    "@types/snapsvg": "^0.5.0",
     "imports-loader": "^0.8.0",
     "lex-parser": "^0.1.4",
     "ts-loader": "^6.0.4",

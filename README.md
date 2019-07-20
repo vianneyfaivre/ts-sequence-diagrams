@@ -8,13 +8,13 @@ Features:
 * Participants order
 * Notes
 * Actor destroyed then recreated
+* Different themes
 
 Tech Features:
 * Error handling
   * use exceptions
   * use error codes
 * Automate the grammar build (use make)
-* use https://svgjs.com instead of snap
 * silent logs
 
 Bugs:
@@ -26,7 +26,7 @@ Site:
 * Textarea + SVG 
 * Draw on input/textarea change
 * Clickable samples
-* Export as PNG
+* Export as PNG / SVG
 * About Page
 * Support Page
 * Save in localStorage
@@ -51,7 +51,7 @@ export default SequenceDiagram;
 ## Run
 
 ```
-npm run-script watch
+npm run start
 ```
 
 Open `./test/basic.html`

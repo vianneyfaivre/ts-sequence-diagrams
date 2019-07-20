@@ -1,6 +1,6 @@
 import { Actor, Signal } from "./model";
 
-export default class SequenceDiagramData {
+export class SequenceDiagramData {
 
     actorOrder: number;
     actors: Actor[];

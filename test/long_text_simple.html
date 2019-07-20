@@ -11,17 +11,8 @@
         <script>
             var input = 
             `
-            A->B: req_AB
-            B->C: req_BC
-            C-->B: resp_CB
-            B->C: req_BC
-            C->C: req_CC
-            C-->B: resp_CB
-            B->B: req_BB
+            A->B: req_AB_LONGTEXT_LONGTEXT_LONGTEXT_LONGTEXT_LONGTEXT_LONGTEXT
             B-->A: resp_BA
-            A->A: req_AA
-            A->C: req_AC
-            C-->A: resp_CA
             `;
             var sequenceDiagram = new SequenceDiagram();
             sequenceDiagram.load(input);

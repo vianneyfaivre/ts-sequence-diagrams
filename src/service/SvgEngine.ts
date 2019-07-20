@@ -7,7 +7,7 @@ import AdjustmentsEngine from "../facade/AdjustmentsEngine";
 /**
  * Generates the whole Sequence Diagram, also it does error handling and logging
  */
-export default class SvgEngine {
+export class SvgEngine {
 
     itemsGenerator: ItemsGenerator;
     adjustmentsEngine: AdjustmentsEngine;
@@ -16,7 +16,7 @@ export default class SvgEngine {
     destroyedActors: Actor[];
 
     constructor(svgElementId: string) {
-        const container = document.getElementById(svgElementId) as unknown as SVGElement;
+        const container = document.getElementById(svgElementId) as unknown as HTMLElement;
         const shapesGenerator = new ShapesGenerator(container);
 
         this.itemsGenerator = new ItemsGenerator(shapesGenerator);
@@ -158,7 +158,14 @@ export default class SvgEngine {
 
         // a. Reorder actors 
         const actorsSorted = this.actors.sort((e1, e2) => {
-            return e1.line.getBBox().x - e2.line.getBBox().x;
+            const diff = e1.line.bbox().x - e2.line.bbox().x;
+
+            // When the line are overlapping perfectly
+            if(diff === 0) {
+                return 1;
+            } 
+
+            return diff;
         });
         
         let allActors = '';
@@ -217,31 +224,14 @@ export default class SvgEngine {
         // From A to B
         else if(signalElement.lineType === LineType.REQUEST) {
             const aBeforeB = actorElA.actor.order < actorElB.actor.order;
-
-            console.log(`request from ${actorElA.actor.order} to ${actorElB.actor.order}`);
-
-            // if(aBeforeB === true) {
-                actorElA.outgoingSignals.push(signalElement);
-                actorElB.incomingSignals.push(signalElement);
-            // } else {
-            //     actorElB.outgoingSignals.push(signalElement);
-            //     actorElA.incomingSignals.push(signalElement);
-            // }
+            actorElA.outgoingSignals.push(signalElement);
+            actorElB.incomingSignals.push(signalElement);
         } 
         // From B to A
         else if(signalElement.lineType === LineType.RESPONSE) {
-
             const aBeforeB = actorElA.actor.order < actorElB.actor.order;
-            
-            console.log(`response from ${actorElA.actor.order} to ${actorElB.actor.order}`);
-
-            // if(aBeforeB === true) {
-            //     actorElA.outgoingSignals.push(signalElement);
-            //     actorElB.incomingSignals.push(signalElement);
-            // } else {
-                actorElB.outgoingSignals.push(signalElement);
-                actorElA.incomingSignals.push(signalElement);
-            // }
+            actorElB.outgoingSignals.push(signalElement);
+            actorElA.incomingSignals.push(signalElement);
         } else {
             console.warn(`Unknown line type '${signalElement.lineType}'`);
         }
