@@ -1,4 +1,4 @@
-import {Element} from "@svgdotjs/svg.js";
+import {Element, Text, Line} from "@svgdotjs/svg.js";
 import { Actor } from '../parser/model';
 
 export class ActorElement {
@@ -42,7 +42,7 @@ export class ActorRect {
 
     constructor(
         readonly rect: Element, 
-        readonly text: Element
+        readonly text: Text
     ) {}
 
     shouldBeResized() : boolean {
@@ -52,24 +52,24 @@ export class ActorRect {
 
 export class SignalElement {
 
-    static forward(line: Element, lineType: LineType, signalType: SignalType, text: Element, actorA: ActorElement, actorB: ActorElement): SignalElement {
+    static forward(line: Line, lineType: LineType, signalType: SignalType, text: Text, actorA: ActorElement, actorB: ActorElement): SignalElement {
         return new SignalElement(line, [], lineType, signalType, text, actorA, actorB);
     }
     
-    static backward(line: Element, lineType: LineType, text: Element, actorA: ActorElement, actorB: ActorElement): SignalElement {
+    static backward(line: Line, lineType: LineType, text: Text, actorA: ActorElement, actorB: ActorElement): SignalElement {
         return new SignalElement(line, [], lineType, SignalType.SIMPLE, text, actorA, actorB);
     }
 
-    static self(lines: Element[], lineType: LineType, text: Element, actor: ActorElement): SignalElement {
+    static self(lines: Line[], lineType: LineType, text: Text, actor: ActorElement): SignalElement {
         return new SignalElement(null, lines, lineType, SignalType.SIMPLE, text, actor, actor);
     }
 
     private constructor(
-        readonly line: Element,
-        readonly lines: Element[], // empty unless signal==self
+        readonly line: Line,
+        readonly lines: Line[], // empty unless signal==self
         readonly lineType: LineType,
         readonly signalType: SignalType,
-        readonly text: Element,
+        readonly text: Text,
         readonly actorA: ActorElement,
         readonly actorB: ActorElement
     ) {}

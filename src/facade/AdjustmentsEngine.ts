@@ -86,11 +86,13 @@ export default class AdjustmentsEngine {
         console.log("* ADJUSTING SPACE BETWEEN ACTORS *");
         for (const i in actors) {
             const actorEl = actors[i];
-            const nextActor = actors[+i+1];
+            const closestActor = actors[+i+1];
 
-            const [shouldMove, offsetX] = this._shouldMoveActor(actorEl, nextActor, Dimensions.DISTANCE_BETWEEN_ACTORS);
+            const [shouldMove, offsetX] = this._shouldMoveActor(actorEl, closestActor, Dimensions.DISTANCE_BETWEEN_ACTORS);
             if(shouldMove === true) {
-                this._moveActor(nextActor, offsetX);
+                
+                // Move the closest actor
+                this._moveActor(closestActor, offsetX);
             }
         }
 
@@ -99,8 +101,7 @@ export default class AdjustmentsEngine {
         for (const i in actors) {
 
             const actorEl = actors[i];
-            const nextActors = actors.slice(+i+1);
-
+            const nextActors = actors.slice(+i);
 
             this._adjustSignals(actorEl, nextActors);
             this._updateDestroyedActor(actorEl);
@@ -119,11 +120,18 @@ export default class AdjustmentsEngine {
         for(const j in actorSignals) {
             const signal = actorSignals[j];
             
-            // Move next actor if any of the current actor signals is too long
             if(nextActor){
+                // Move next actor if any of the current actor signals is too long
                 const [shouldMove, offsetX] = this._isSignalTextTooLong(signal, nextActor);
                 if(shouldMove === true) {
-                    nextActors.forEach(a => this._moveActor(a, offsetX));
+
+                    console.log(`LOL`);
+                    console.log(nextActors);
+
+                    nextActors.forEach(a => {
+                        console.log(`Moving actor '${a.actor.name}' because of actor '${nextActor.actor.name}' ${offsetX}px to the right`)
+                        this._moveActor(a, offsetX);
+                    });
                 }
             }
 
@@ -158,7 +166,7 @@ export default class AdjustmentsEngine {
     
                 if(overlaps === true) {
                     const offsetX = signalTextX2 - nextActorLineX + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
-                    console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.toString()}`);
+                    console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.text()}`);
                     return [true, offsetX];
                 } 
             }
@@ -175,7 +183,7 @@ export default class AdjustmentsEngine {
     
                 if(overlaps === true) {
                     const offsetX = newSignalLength - oldSignalLength + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
-                    console.log(`Signal text is too long, it overlaps on actor '${signal.actorB.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.toString()}`);
+                    console.log(`Signal text is too long, it overlaps on actor '${signal.actorB.actor.name}', this actor should be moved ${offsetX}px to the right. Text=${signal.text.text()}`);
                     return [true, offsetX];
                 } 
             }
@@ -183,16 +191,23 @@ export default class AdjustmentsEngine {
         // Check if the text overlaps the next actor top rect
         else if(signal.signalType === SignalType.ACTOR_CREATION) {
             const nextActorTopRectX = closeActor.topRect.rect.bbox().x;
+            const actorBTopRectX = signal.actorB.topRect.rect.bbox().x;
             const signalTextX1 = signal.text.bbox().x;
             const signalTextX2 = signalTextX1 + signal.text.bbox().width;
 
-            const overlaps = (signalTextX1 < nextActorTopRectX) && (nextActorTopRectX < signalTextX2);
+            const overlapsNextActor = (signalTextX1 < nextActorTopRectX) && (nextActorTopRectX < signalTextX2);
+            const overlapsActorB = (signalTextX1 < actorBTopRectX) && (actorBTopRectX < signalTextX2);
 
-            if(overlaps === true) {
+            if(overlapsNextActor === true) {
                 const offsetX = signalTextX2 - nextActorTopRectX + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
-                console.log(`Signal text is too long, it overlaps on actor '${closeActor.actor.name}' top rectangle, this actor should be moved ${offsetX}px to the right. Text=${signal.text.toString()}`);
+                console.log(`Creation signal text is too long, it overlaps on next actor '${closeActor.actor.name}' top rectangle, this actor should be moved ${offsetX}px to the right. Text=${signal.text.text()}`);
                 return [true, offsetX];
             } 
+            if(overlapsActorB === true) {
+                const offsetX = signalTextX2 - actorBTopRectX + Dimensions.SIGNAL_OVERLAPPING_ACTOR_X_OFFSET;
+                console.log(`Creation signal text is too long, it overlaps on actor B '${signal.actorB.actor.name}' top rectangle, this actor should be moved ${offsetX}px to the right. Text=${signal.text.text()}`);
+                return [true, offsetX];
+            }
         } 
 
         return [false, 0];
@@ -250,7 +265,7 @@ export default class AdjustmentsEngine {
                         || (signal.actorA.line.bbox().x !== line3.bbox().x2);
     
                     if(shouldBeAdjusted === true) {
-                        console.log(`Adjusting '${signal.actorA.actor.name}' self signal : ${signal.text.toString()}`);
+                        console.log(`Adjusting '${signal.actorA.actor.name}' self signal : ${signal.text.text()}`);
                         const line1Width = line1.bbox().width;
 
                         line1.attr({
@@ -274,71 +289,61 @@ export default class AdjustmentsEngine {
                     }
                 }
                 else if(signal.lineType === LineType.REQUEST) {
-
-                    const shouldBeAdjusted = (signal.actorA.line.bbox().x !== signal.line.bbox().x) 
-                                            || (signal.actorB.line.bbox().x !== signal.line.bbox().x2);
-
-                    // if(shouldBeAdjusted === true) {
-                        // console.log(`Adjusting request signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.toString()}`);
     
-                        const lineX1 = signal.actorA.line.bbox().x;
-                        const lineX2 = signal.actorB.line.bbox().x;
+                    const lineX1 = signal.actorA.line.bbox().x;
+                    const lineX2 = signal.actorB.line.bbox().x;
 
-                        if(lineX1 < lineX2) {
-                            signal.line.attr({
-                                "x1": lineX1,
-                                "x2": lineX2
-                            });
+                    console.debug(`Signal Request ${signal.actorA.actor.name}-${signal.actorB.actor.name}: x1=${lineX1} x2=${lineX2}`);
 
-                            signal.text.attr({
-                                "x": Dimensions.ACTOR_RECT_MIN_X_PADDING + lineX1
-                            });
-                        } else {
-                            signal.line.attr({
-                                "x1": lineX2,
-                                "x2": lineX1
-                            });
-                            
-                            const textX = lineX1 - Dimensions.SIGNAL_TEXT_PADDING_X - signal.text.bbox().w;
+                    if(lineX1 < lineX2) {
+                        signal.line.attr({
+                            "x1": lineX1,
+                            "x2": lineX2
+                        });
 
-                            signal.text.attr({
-                                "x": textX
-                            });
-                        }
-                    // }
+                        signal.text.attr({
+                            "x": Dimensions.ACTOR_RECT_MIN_X_PADDING + lineX1
+                        });
+                    } else {
+                        signal.line.attr({
+                            "x1": lineX2,
+                            "x2": lineX1
+                        });
+                        
+                        const textX = lineX1 - Dimensions.SIGNAL_TEXT_PADDING_X - signal.text.bbox().w;
+
+                        signal.text.attr({
+                            "x": textX
+                        });
+                    }
                 } 
                 else if(signal.lineType === LineType.RESPONSE){
-                    const shouldBeAdjusted = (signal.actorB.line.bbox().x !== signal.line.bbox().x) 
-                                             || (signal.actorA.line.bbox().x !== signal.line.bbox().x2);
+                    const lineX1 = signal.actorA.line.bbox().x;
+                    const lineX2 = signal.actorB.line.bbox().x;
 
-                    // if(shouldBeAdjusted === true) {
-                        // console.log(`Adjusting response signal from '${signal.actorA.actor.name}' to '${signal.actorB.actor.name}' : ${signal.text.toString()}`);
-    
-                        const lineX1 = signal.actorA.line.bbox().x;
-                        const lineX2 = signal.actorB.line.bbox().x;
+                    console.debug(`Signal Response ${signal.actorA.actor.name}-${signal.actorB.actor.name}: x1=${lineX1} x2=${lineX2}`);
 
-                        if(lineX1 < lineX2) {
-                            signal.line.attr({
-                                "x1": signal.actorA.line.bbox().x,
-                                "x2": signal.actorB.line.bbox().x
-                            });
+                    if(lineX1 < lineX2) {
+                        signal.line.attr({
+                            "x1": lineX1,
+                            "x2": lineX2
+                        });
 
-                            const textX = Dimensions.SIGNAL_TEXT_PADDING_X + signal.actorA.line.bbox().x;
-                            signal.text.attr({
-                                "x": textX
-                            });
-                        } else {
-                            signal.line.attr({
-                                "x1": signal.actorB.line.bbox().x,
-                                "x2": signal.actorA.line.bbox().x
-                            });
+                        const textX = Dimensions.SIGNAL_TEXT_PADDING_X + signal.actorA.line.bbox().x;
+                        signal.text.attr({
+                            "x": textX
+                        });
+                    } else {
+                        signal.line.attr({
+                            "x1": lineX2,
+                            "x2": lineX1
+                        });
 
-                            const textX = lineX1 - signal.text.bbox().width - Dimensions.SIGNAL_TEXT_PADDING_X;
-                            signal.text.attr({
-                                "x": textX
-                            });
-                        }
-                    // }
+                        const textX = lineX1 - signal.text.bbox().width - Dimensions.SIGNAL_TEXT_PADDING_X;
+                        signal.text.attr({
+                            "x": textX
+                        });
+                    }
                 }
             } 
             else if (signal.signalType === SignalType.ACTOR_CREATION) {
@@ -454,7 +459,7 @@ export default class AdjustmentsEngine {
             actorAfter.topRect.rect,
             actorAfter.topRect.text,
             actorAfter.line
-        ];
+        ]; 
 
         if(actorAfter.bottomRect) {
             elementsToMove.push(actorAfter.bottomRect.rect);

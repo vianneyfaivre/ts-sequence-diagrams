@@ -1,4 +1,4 @@
-import {Svg, Element, Container, Marker} from "@svgdotjs/svg.js";
+import {Svg, Element, Container, Marker, Matrix, MatrixAlias, TransformData} from "@svgdotjs/svg.js";
 import { CrossElement, LineOption, TextOption, Dimensions } from './model';
 
 /**
@@ -20,8 +20,6 @@ export class ShapesGenerator {
             add.path('M 0 0   L 5 2.5   L 0 5   z');
             add.ref(5, 2.5);
         });
-        // this.startMarker = this.paper.path('M 0 2.5   L 5 5   L 5 0   z').marker(0, 0, 5, 5, 0, 2.5);
-        // this.endMarker = this.paper.path('M 0 0   L 5 2.5   L 0 5   z').marker(0, 0, 5, 5, 5, 2.5);
     }
 
     drawLine(x1: number, x2: number, y1: number, y2: number, options?: LineOption[]) {
@@ -61,7 +59,7 @@ export class ShapesGenerator {
 
     drawText(x: number, y: number, text: string, options?: TextOption[]) {
 
-        var t = this.paper.text('').tspan(text).attr({ x: x, y: y });
+        var t = this.paper.plain(text).attr({ x: x, y: y });
 
         if(options && options.includes(TextOption.CENTERED)) {
             t.attr({
@@ -103,26 +101,7 @@ export class ShapesGenerator {
     }
 
     _translateElement(element: Element, offsetX: number) {
-
-        let fullOffsetX = offsetX;
-
-        // This hack is a dirty way to have multiple x-translations...  
-        // Keep in mind that adding more transformations elsewhere might break the entire offset mechanism
-        const existingTransformation = element.transform();
-
-        if(existingTransformation) {
-            // retrieve the existing X offset in the transformation "tx,y"
-            const parts = existingTransformation.toString().split(",");
-            if(parts.length > 0 && parts[0].startsWith("t") && parts[0].length > 1) {
-                const existingOffsetX = +parts[0].substring(1, parts[0].length);
-                if(existingOffsetX > 0) {
-                    fullOffsetX += existingOffsetX;
-                }
-            }
-        }
-
-        const translationX = `translate(${fullOffsetX},0)`;
-        element.transform(translationX);
+        element.x(element.x() + offsetX);
     }
 
 }

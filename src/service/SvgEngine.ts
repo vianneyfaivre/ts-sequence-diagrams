@@ -158,7 +158,14 @@ export class SvgEngine {
 
         // a. Reorder actors 
         const actorsSorted = this.actors.sort((e1, e2) => {
-            return e1.line.bbox().x - e2.line.bbox().x;
+            const diff = e1.line.bbox().x - e2.line.bbox().x;
+
+            // When the line are overlapping perfectly
+            if(diff === 0) {
+                return 1;
+            } 
+
+            return diff;
         });
         
         let allActors = '';
@@ -217,31 +224,14 @@ export class SvgEngine {
         // From A to B
         else if(signalElement.lineType === LineType.REQUEST) {
             const aBeforeB = actorElA.actor.order < actorElB.actor.order;
-
-            console.log(`request from ${actorElA.actor.order} to ${actorElB.actor.order}`);
-
-            // if(aBeforeB === true) {
-                actorElA.outgoingSignals.push(signalElement);
-                actorElB.incomingSignals.push(signalElement);
-            // } else {
-            //     actorElB.outgoingSignals.push(signalElement);
-            //     actorElA.incomingSignals.push(signalElement);
-            // }
+            actorElA.outgoingSignals.push(signalElement);
+            actorElB.incomingSignals.push(signalElement);
         } 
         // From B to A
         else if(signalElement.lineType === LineType.RESPONSE) {
-
             const aBeforeB = actorElA.actor.order < actorElB.actor.order;
-            
-            console.log(`response from ${actorElA.actor.order} to ${actorElB.actor.order}`);
-
-            // if(aBeforeB === true) {
-            //     actorElA.outgoingSignals.push(signalElement);
-            //     actorElB.incomingSignals.push(signalElement);
-            // } else {
-                actorElB.outgoingSignals.push(signalElement);
-                actorElA.incomingSignals.push(signalElement);
-            // }
+            actorElB.outgoingSignals.push(signalElement);
+            actorElA.incomingSignals.push(signalElement);
         } else {
             console.warn(`Unknown line type '${signalElement.lineType}'`);
         }
