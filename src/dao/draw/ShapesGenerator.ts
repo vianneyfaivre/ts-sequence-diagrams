@@ -1,4 +1,4 @@
-import {Svg, Element, Container, Marker, Matrix, MatrixAlias, TransformData} from "@svgdotjs/svg.js";
+import {Svg, Element, Text, Marker, Rect, Line} from "@svgdotjs/svg.js";
 import { CrossElement, LineOption, TextOption, Dimensions } from './model';
 
 /**
@@ -22,7 +22,7 @@ export class ShapesGenerator {
         });
     }
 
-    drawLine(x1: number, x2: number, y1: number, y2: number, options?: LineOption[]) {
+    drawLine(x1: number, x2: number, y1: number, y2: number, options?: LineOption[]): Line {
 
         const line = this.paper.line(x1, y1, x2, y2);
         line.attr({
@@ -47,7 +47,7 @@ export class ShapesGenerator {
         return line;
     }
 
-    drawRect(x: number, y: number, w: number, h: number): Element {
+    drawRect(x: number, y: number, w: number, h: number): Rect {
         return this.paper.rect(w, h)
                             .move(x, y)
                             .attr({
@@ -57,7 +57,7 @@ export class ShapesGenerator {
                             });
     }
 
-    drawText(x: number, y: number, text: string, options?: TextOption[]) {
+    drawText(x: number, y: number, text: string, options?: TextOption[]): Text {
 
         var t = this.paper.plain(text).attr({ x: x, y: y });
 
@@ -93,15 +93,10 @@ export class ShapesGenerator {
         return new CrossElement(line1, line2);
     }
 
-    translateElements(elements: Element[], offsetX: number) {
+    translateElements(elements: Element[], offsetX: number): void {
         // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
         elements
             .filter(element => element != null)
-            .forEach(element => this._translateElement(element, offsetX));
+            .forEach(element => element.x(element.x() + offsetX));
     }
-
-    _translateElement(element: Element, offsetX: number) {
-        element.x(element.x() + offsetX);
-    }
-
 }

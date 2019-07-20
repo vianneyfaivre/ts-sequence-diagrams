@@ -1,7 +1,7 @@
 import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption } from "../dao/draw/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
 import { Actor, Signal } from "../dao/parser/model";
-import {Element} from "@svgdotjs/svg.js";
+import {Element, Line} from "@svgdotjs/svg.js";
 
 /**
  * Generates sequence diagrams items: Actor, Signal, Note, ...
@@ -173,7 +173,7 @@ export default class ItemsGenerator {
         return [signalEl, actorElB];
     }
 
-    destroyActor(actorEl: ActorElement, offsetY: number): [Element, CrossElement] {
+    destroyActor(actorEl: ActorElement, offsetY: number): [Line, CrossElement] {
         // Draw actor line
         const x = actorEl.topRect.rect.bbox().x + (Dimensions.ACTOR_RECT_WIDTH / 2);
         const y1 = actorEl.topRect.rect.bbox().y + Dimensions.ACTOR_RECT_HEIGHT;
@@ -187,7 +187,7 @@ export default class ItemsGenerator {
         return [line, cross];
     }
 
-    _drawLivingActorLineAndRect(actorElement: ActorElement, actorName: string, offsetY: number): [Element, ActorRect] {
+    _drawLivingActorLineAndRect(actorElement: ActorElement, actorName: string, offsetY: number): [Line, ActorRect] {
         // Draw whole line
         const lineX = actorElement.topRect.rect.bbox().x + (Dimensions.ACTOR_RECT_WIDTH / 2);
         const lineY1 = actorElement.topRect.rect.bbox().y + Dimensions.ACTOR_RECT_HEIGHT;

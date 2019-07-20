@@ -1,4 +1,4 @@
-import {Element, Text, Line} from "@svgdotjs/svg.js";
+import {Element, Text, Line, Rect} from "@svgdotjs/svg.js";
 import { Actor } from '../parser/model';
 
 export class ActorElement {
@@ -7,7 +7,7 @@ export class ActorElement {
     readonly outgoingSignals: SignalElement[];
     readonly selfSignals: SignalElement[];
     bottomRect: ActorRect;
-    line: Element;
+    line: Line;
     destroyed: boolean;
     cross: CrossElement;
 
@@ -33,15 +33,15 @@ export class ActorElement {
 
 export class CrossElement {
     constructor(
-        readonly line1: Element, 
-        readonly line2: Element
+        readonly line1: Line, 
+        readonly line2: Line
     ) {}
 } 
 
 export class ActorRect {
 
     constructor(
-        readonly rect: Element, 
+        readonly rect: Rect, 
         readonly text: Text
     ) {}
 
