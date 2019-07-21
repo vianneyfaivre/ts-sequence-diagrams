@@ -5,21 +5,24 @@
     </head>
 
     <body>
-        <svg id="diagram-container"></svg>
+        <div id="diagram-container"></div>
         
         <script src="../dist/bundle.js"></script>
         <script>
             var input = 
             `
-            title long text
+            title this title is so long, this title is so long, this title is so long, this title is so long, this title is so long
             A->B: req_AB
-            B->*C: req_BC
-            C->D: req_CD
-            D-->C: req_DC_LONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXT 
-            A->A: req_AA_LONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXTLONGTEXT
-            D->E: req_DE
-            A->E: req_AE
-            E-->A: resp_EA
+            B->C: req_BC
+            C-->B: resp_CB
+            B->C: req_BC
+            C->C: req_CC
+            C-->B: resp_CB
+            B->B: req_BB
+            B-->A: resp_BA
+            A->A: req_AA
+            A->C: req_AC
+            C-->A: resp_CA
             `;
             var sequenceDiagram = new SequenceDiagram();
             sequenceDiagram.load(input);

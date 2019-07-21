@@ -1,5 +1,6 @@
-import { LineType, SignalType, Dimensions, ActorElement, SignalElement } from "../dao/draw/model";
+import { LineType, SignalType, Dimensions, ActorElement, SignalElement, TitleElement } from "../dao/draw/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
+import {Element} from "@svgdotjs/svg.js";
 
 /**
  * Adjusts the positions of the items once drawn
@@ -11,27 +12,35 @@ export default class AdjustmentsEngine {
         readonly shapesGenerator: ShapesGenerator) {
     }
 
-    resizeSvg(actors: ActorElement[]): void {
+    resizeSvg(actors: ActorElement[], title?: TitleElement): void {
 
-        console.log("* RESIZING SVG *");
-        
+        let svgWidth = 200;
+        let svgHeight = 200;
+
         const lastActor = actors[actors.length - 1];
+        if(lastActor) {
 
-        // Compute SVG Width
-        let svgWidth = lastActor.topRect.rect.bbox().x2;
-        
-        for (const i in lastActor.selfSignals) {
-            const signal = lastActor.selfSignals[i];
+            // Compute SVG Width
+            svgWidth = lastActor.topRect.rect.bbox().x2;
+            
+            for (const i in lastActor.selfSignals) {
+                const signal = lastActor.selfSignals[i];
+                
+                const signalTextX2 = signal.text.bbox().x + signal.text.bbox().width;
+                if(signalTextX2 > svgWidth) {
+                    svgWidth = signalTextX2;
+                }
+            }
 
-            const signalTextX2 = signal.text.bbox().x + signal.text.bbox().width;
-            if(signalTextX2 > svgWidth) {
-                svgWidth = signalTextX2;
+            if(title) {
+                const titleWidth = title.title.bbox().width;
+                if(titleWidth > svgWidth) {
+                    svgWidth = titleWidth + Dimensions.SVG_PADDING * 2;
+                }
             }
         }
 
         // Compute SVG Height
-        let svgHeight = 0;
-
         for (const i in actors) {
             const actor = actors[i];
 
@@ -69,7 +78,7 @@ export default class AdjustmentsEngine {
 
     }
 
-    autoAdjust(actors: ActorElement[]): void {
+    adjustActorsAndSignals(actors: ActorElement[]): void {
 
         // b. Adjust actor top/bottom rectangles
         console.log("* RESIZING ACTOR RECTANGLES *");
@@ -455,7 +464,7 @@ export default class AdjustmentsEngine {
         console.log(`Moving actor '${actorAfter.actor.name}' ${offsetX}px to the right`);
 
         // Move actor
-        const elementsToMove = [
+        const elementsToMove: Element[] = [
             actorAfter.topRect.rect,
             actorAfter.topRect.text,
             actorAfter.line
@@ -466,6 +475,20 @@ export default class AdjustmentsEngine {
             elementsToMove.push(actorAfter.bottomRect.text);
         }
 
-        this.shapesGenerator.translateElements(elementsToMove, offsetX);
+        this.translateElementsX(elementsToMove, offsetX);
+    }
+    
+    translateElementsX(elements: Element[], offsetX: number): void {
+        // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
+        elements
+            .filter(element => element != null)
+            .forEach(element => element.x(element.x() + offsetX));
+    }
+
+    translateElementsY(elements: Element[], offsetY: number): void {
+        // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
+        elements
+            .filter(element => element != null)
+            .forEach(element => element.y(element.y() + offsetY));
     }
 }

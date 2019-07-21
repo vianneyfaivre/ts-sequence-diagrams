@@ -1,8 +1,9 @@
-import { ActorElement, SignalElement, SignalType, LineType, Dimensions } from "../dao/draw/model";
+import { ActorElement, SignalElement, SignalType, LineType, Dimensions, TitleElement } from "../dao/draw/model";
 import ItemsGenerator from "../facade/ItemsGenerator";
 import { Signal, Actor } from "../dao/parser/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
 import AdjustmentsEngine from "../facade/AdjustmentsEngine";
+import {Element} from "@svgdotjs/svg.js";
 
 /**
  * Generates the whole Sequence Diagram, also it does error handling and logging
@@ -11,25 +12,40 @@ export class SvgEngine {
 
     itemsGenerator: ItemsGenerator;
     adjustmentsEngine: AdjustmentsEngine;
+
+    container: HTMLElement;
+    title?: TitleElement;
     actors: ActorElement[];
     signals: SignalElement[];
     destroyedActors: Actor[];
 
     constructor(svgElementId: string) {
-        const container = document.getElementById(svgElementId) as unknown as HTMLElement;
-        const shapesGenerator = new ShapesGenerator(container);
+        this.container = document.getElementById(svgElementId) as unknown as HTMLElement;
+        const shapesGenerator = new ShapesGenerator(this.container);
 
         this.itemsGenerator = new ItemsGenerator(shapesGenerator);
-        this.adjustmentsEngine = new AdjustmentsEngine(container, shapesGenerator);
+        this.adjustmentsEngine = new AdjustmentsEngine(this.container, shapesGenerator);
 
         this.actors = [];
         this.signals = [];
         this.destroyedActors = [];
     }
 
-    drawSignals(signals: Signal[]) {
+    drawTitle(title: string): void {
+        const titleX = "50%";
+        const titleY = 10;
+
+        this.title = this.itemsGenerator.drawTitle(titleX, titleY, title);
+    }
+
+    drawSignals(signals: Signal[], hasTitle: boolean): void {
+
+        let initialOffset = Dimensions.SVG_PADDING + Dimensions.DISTANCE_BETWEEN_SIGNALS;
+        if(hasTitle) {
+            initialOffset += Dimensions.TITLE_HEIGHT;
+        } 
         
-        var offsetY = Dimensions.DISTANCE_BETWEEN_SIGNALS;
+        let offsetY = initialOffset;
 
         for(const signal of signals) {
             if(signal.type === SignalType.SIMPLE) {
@@ -130,9 +146,16 @@ export class SvgEngine {
         this.itemsGenerator.drawActorLines(this.actors, this.destroyedActors, offsetY);
     }
 
-    drawActors(actors: Actor[]) {
+    drawActors(actors: Actor[], hasTitle: boolean): void {
 
         let offsetX = Dimensions.SVG_PADDING;
+
+        let initialOffset = Dimensions.SVG_PADDING;
+        if(hasTitle) {
+            initialOffset += Dimensions.TITLE_HEIGHT;
+        } 
+
+        let offsetY = initialOffset;
 
         for (const actorName in actors) {
 
@@ -142,8 +165,7 @@ export class SvgEngine {
             if(actor.createdBySignal === false) {
                 console.log(`Drawing Actor '${actor.name}'`);
 
-                const actorY = Dimensions.SVG_PADDING;
-                const actorEl = this.itemsGenerator.drawActor(actor, offsetX, actorY);
+                const actorEl = this.itemsGenerator.drawActor(actor, offsetX, offsetY);
                 
                 this.actors.push(actorEl);
     
@@ -152,7 +174,7 @@ export class SvgEngine {
         }
     }
 
-    autoAdjust() {
+    adjustActorsAndSignals(): void {
 
         console.log("** AUTO_ADJUSTING **");
 
@@ -176,11 +198,15 @@ export class SvgEngine {
         
         console.log(`Actors sorted: ${allActors}`);
 
-        this.adjustmentsEngine.autoAdjust(actorsSorted);
-        this.adjustmentsEngine.resizeSvg(actorsSorted);
+        this.adjustmentsEngine.adjustActorsAndSignals(actorsSorted);
     }
 
-    printCurrentState() {
+    resizeSvg(): void {
+        console.log("** RESIZING SVG **");
+        this.adjustmentsEngine.resizeSvg(this.actors, this.title);
+    }
+
+    printCurrentState(): void {
 
         console.log("* ACTORS CURRENTLY DRAWN");
         for (const actorName in this.actors) {

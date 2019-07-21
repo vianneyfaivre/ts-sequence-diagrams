@@ -1,4 +1,4 @@
-import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption } from "../dao/draw/model";
+import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption, TitleElement } from "../dao/draw/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
 import { Actor, Signal } from "../dao/parser/model";
 import {Element, Line} from "@svgdotjs/svg.js";
@@ -8,7 +8,15 @@ import {Element, Line} from "@svgdotjs/svg.js";
  */
 export default class ItemsGenerator {
 
+    signalCount: number;
+
     constructor(readonly shapesGenerator: ShapesGenerator) {
+        this.signalCount = 0;
+    }
+
+    drawTitle(x: string, y: number, title: string): TitleElement {
+        const text = this.shapesGenerator.drawText(x, y, title, [TextOption.CENTERED, TextOption.TITLE]);
+        return new TitleElement(text);
     }
     
     drawSignal(signal: Signal, offsetY: number,
@@ -123,7 +131,7 @@ export default class ItemsGenerator {
         const textY = lineY - Dimensions.SIGNAL_TEXT_PADDING_Y;
         const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
-        return SignalElement.forward(line, signal.lineType, signal.type, text, actorElA, actorElB);
+        return SignalElement.forward(this.signalCount++, line, signal.lineType, signal.type, text, actorElA, actorElB);
     }
 
     _drawSelfSignal(signal: Signal, offsetY: number, actorElA: ActorElement): SignalElement {
@@ -145,7 +153,7 @@ export default class ItemsGenerator {
         const textY = y1 + Dimensions.SIGNAL_SELF_TEXT_PADDING_Y;
         const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
-        return SignalElement.self(lines, signal.lineType, text, actorElA);
+        return SignalElement.self(this.signalCount++, lines, signal.lineType, text, actorElA);
     }
 
     drawSignalAndActor(signal: Signal, actorElA: ActorElement, offsetY: number) : [SignalElement, ActorElement] {
@@ -168,7 +176,7 @@ export default class ItemsGenerator {
         const rectY = signalY - (Dimensions.ACTOR_RECT_HEIGHT / 2);
         const actorElB = this._drawActorCreatedBySignal(signal, rectX, rectY, offsetY);
         
-        const signalEl = SignalElement.forward(line, LineType.REQUEST, SignalType.ACTOR_CREATION, text, actorElA, actorElB);
+        const signalEl = SignalElement.forward(this.signalCount++, line, LineType.REQUEST, SignalType.ACTOR_CREATION, text, actorElA, actorElB);
 
         return [signalEl, actorElB];
     }

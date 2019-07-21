@@ -3,7 +3,6 @@
 ## TODO
 
 Features:
-* Diagram title
 * Loops
 * Participants order
 * Notes

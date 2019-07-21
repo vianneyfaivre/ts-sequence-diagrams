@@ -1,15 +1,20 @@
 import {Element, Text, Line, Rect} from "@svgdotjs/svg.js";
-import { Actor } from '../parser/model';
+import { Actor, Signal } from '../parser/model';
+
+export class TitleElement {
+    constructor(readonly title: Text) {
+    }
+}
 
 export class ActorElement {
 
     readonly incomingSignals: SignalElement[];
     readonly outgoingSignals: SignalElement[];
     readonly selfSignals: SignalElement[];
-    bottomRect: ActorRect;
+    bottomRect?: ActorRect;
     line: Line;
     destroyed: boolean;
-    cross: CrossElement;
+    cross?: CrossElement;
 
     constructor(
         readonly actor: Actor,
@@ -29,6 +34,48 @@ export class ActorElement {
         
         return `Actor '${this.actor.name}'. Signals: outgoing=${this.outgoingSignals.length} incoming=${this.incomingSignals.length} self=${this.selfSignals.length}. bottomRect=${hasBottomRect}. dies=${this.destroyed}`;
     }
+
+    svgElements(): Element[] {
+
+        const signals: Element[] = [];
+
+        for(const signal of this.incomingSignals) {
+
+            if(!signals[signal.id]) {
+                signals.push(...signal.svgElements());
+            }
+        }
+
+        for(const signal of this.outgoingSignals) {
+
+            if(!signals[signal.id]) {
+                signals.push(...signal.svgElements());
+            }
+        }
+
+        for(const signal of this.selfSignals) {
+
+            if(!signals[signal.id]) {
+                signals.push(...signal.svgElements());
+            }
+        }
+
+        const elements: Element[] = [];
+
+        elements.push(this.line);
+        elements.push(...this.topRect.svgElements());
+        elements.push(...signals);
+
+        if(this.cross) {
+            elements.push(...this.cross.svgElements());
+        }
+
+        if(this.bottomRect) {
+            elements.push(...this.bottomRect.svgElements());
+        }
+
+        return elements;
+    }
 }
 
 export class CrossElement {
@@ -36,6 +83,10 @@ export class CrossElement {
         readonly line1: Line, 
         readonly line2: Line
     ) {}
+
+    svgElements(): Element[] {
+        return [this.line1, this.line2];
+    }
 } 
 
 export class ActorRect {
@@ -48,23 +99,28 @@ export class ActorRect {
     shouldBeResized() : boolean {
         return this.text.bbox().width >= this.rect.bbox().width;
     }
+
+    svgElements(): Element[] {
+        return [this.rect, this.text];
+    }
 }
 
 export class SignalElement {
 
-    static forward(line: Line, lineType: LineType, signalType: SignalType, text: Text, actorA: ActorElement, actorB: ActorElement): SignalElement {
-        return new SignalElement(line, [], lineType, signalType, text, actorA, actorB);
+    static forward(id: number, line: Line, lineType: LineType, signalType: SignalType, text: Text, actorA: ActorElement, actorB: ActorElement): SignalElement {
+        return new SignalElement(id, line, [], lineType, signalType, text, actorA, actorB);
     }
     
-    static backward(line: Line, lineType: LineType, text: Text, actorA: ActorElement, actorB: ActorElement): SignalElement {
-        return new SignalElement(line, [], lineType, SignalType.SIMPLE, text, actorA, actorB);
+    static backward(id: number, line: Line, lineType: LineType, text: Text, actorA: ActorElement, actorB: ActorElement): SignalElement {
+        return new SignalElement(id, line, [], lineType, SignalType.SIMPLE, text, actorA, actorB);
     }
 
-    static self(lines: Line[], lineType: LineType, text: Text, actor: ActorElement): SignalElement {
-        return new SignalElement(null, lines, lineType, SignalType.SIMPLE, text, actor, actor);
+    static self(id: number, lines: Line[], lineType: LineType, text: Text, actor: ActorElement): SignalElement {
+        return new SignalElement(id, null, lines, lineType, SignalType.SIMPLE, text, actor, actor);
     }
 
     private constructor(
+        readonly id: number,
         readonly line: Line,
         readonly lines: Line[], // empty unless signal==self
         readonly lineType: LineType,
@@ -74,11 +130,26 @@ export class SignalElement {
         readonly actorB: ActorElement
     ) {}
 
-    toSameActor() {
+    svgElements(): Element[] {
+
+        const elements: Element[] = [
+            this.text
+        ];
+
+        if(this.lines.length > 0) {
+            elements.push(...this.lines);
+        } else {
+            elements.push(this.line);
+        }
+
+        return elements;
+    }
+
+    toSameActor(): boolean {
         return this.actorA.actor.name === this.actorB.actor.name; 
     }
 
-    toString() {
+    toString(): string {
         const toSelf = this.actorA.actor.name === this.actorB.actor.name;
         
         if(toSelf === true) {
@@ -112,13 +183,17 @@ export enum LineOption {
 }
 
 export enum TextOption {
-    CENTERED
+    CENTERED,
+    TITLE
 }
 
 export class Dimensions {
 
     /* X and Y padding of the whole SVG */
     static SVG_PADDING = 10;
+
+    /* Height of title bar */
+    static TITLE_HEIGHT = 25;
 
     /* Y distance between two signals */
     static DISTANCE_BETWEEN_SIGNALS = 50;

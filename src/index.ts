@@ -20,9 +20,21 @@ export default class SequenceDiagram {
 
     draw(htmlElementId: string) {
         this.svgEngine = new SvgEngine(htmlElementId);
-        this.svgEngine.drawActors(this.data.actors);
-        this.svgEngine.drawSignals(this.data.signals);
-        this.svgEngine.autoAdjust();
+
+        let hasTitle = false;
+        if(this.data.title && this.data.title.trim() !== '') {
+            hasTitle = true;
+        }
+        
+        this.svgEngine.drawActors(this.data.actors, hasTitle);
+        this.svgEngine.drawSignals(this.data.signals, hasTitle);
+        this.svgEngine.adjustActorsAndSignals();
+
+        if(hasTitle) {
+            this.svgEngine.drawTitle(this.data.title);
+        }
+
+        this.svgEngine.resizeSvg();
     }
 
     debug() {

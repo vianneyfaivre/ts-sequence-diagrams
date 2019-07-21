@@ -3,6 +3,7 @@ import { Actor, Signal } from "./model";
 export class SequenceDiagramData {
 
     actorOrder: number;
+    title?: string;
     actors: Actor[];
     signals: Signal[];
 
@@ -71,6 +72,9 @@ export class SequenceDiagramData {
 
     setTitle = function(title: string) {
         console.log(`Parsed title : ${title}`);
+        if(title) {
+            this.title = title.trim();
+        }
     }
 
     destroyActor = function(actor: string) {

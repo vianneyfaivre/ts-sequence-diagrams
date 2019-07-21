@@ -57,14 +57,20 @@ export class ShapesGenerator {
                             });
     }
 
-    drawText(x: number, y: number, text: string, options?: TextOption[]): Text {
-
+    drawText(x: number | string , y: number, text: string, options?: TextOption[]): Text {
+        
         var t = this.paper.plain(text).attr({ x: x, y: y });
 
         if(options && options.includes(TextOption.CENTERED)) {
             t.attr({
                 "dominant-baseline": "middle",
                 "text-anchor": "middle"
+            });
+        }
+
+        if(options && options.includes(TextOption.TITLE)) {
+            t.attr({
+                "font-size": 20
             });
         }
          
@@ -91,12 +97,5 @@ export class ShapesGenerator {
         });
 
         return new CrossElement(line1, line2);
-    }
-
-    translateElements(elements: Element[], offsetX: number): void {
-        // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
-        elements
-            .filter(element => element != null)
-            .forEach(element => element.x(element.x() + offsetX));
     }
 }
