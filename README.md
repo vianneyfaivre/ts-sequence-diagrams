@@ -8,12 +8,12 @@ Features:
 * Notes
 * Actor destroyed then recreated
 * Different themes
+* Destroy actors even if they were not created by a signal
 
 Tech Features:
 * Error handling
-  * use exceptions
+  * use exceptions: ParsingError, DrawingError
   * use error codes
-* Automate the grammar build (use make)
 * silent logs
 
 Bugs:
@@ -24,6 +24,7 @@ Bugs:
 Site:
 * Textarea + SVG 
 * Draw on input/textarea change
+* Display parsing errors
 * Clickable samples
 * Export as PNG / SVG
 * About Page
@@ -37,14 +38,6 @@ Build the grammar using Jison:
 ```
 npm install jison -g
 npm run build-grammar
-```
-
-To export the generated code as a module, update the end of SequenceDiagram.js:
-```
-Parser.prototype.parse = parser.parse;
-return new Parser;
-})();
-export default SequenceDiagram;
 ```
 
 ## Run

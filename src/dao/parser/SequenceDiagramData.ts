@@ -93,4 +93,20 @@ export class SequenceDiagramData {
             console.error(`Unable to destroy actor '${actor}' because it does not exist`);
         }
     }
+
+    inLoop = false;
+    
+    pushStatement = function(statement: string) {
+        console.log(`Statement: ${statement} (in loop=${this.inLoop})`);
+    }
+
+    forBlockStart = function(loopLabel: string) {
+        console.log(`Starting loop ${loopLabel}`);
+        this.inLoop = true;
+    }
+
+    forBlockEnd = function() {
+        console.log(`Ending loop`);
+        this.inLoop = false;
+    }
 }

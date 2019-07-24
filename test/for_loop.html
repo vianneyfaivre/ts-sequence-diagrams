@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+    </head>
+
+    <body>
+        <svg id="diagram-container"></svg>
+        
+        <script src="../dist/bundle.js"></script>
+        <script>
+            var input = 
+            `
+            title test loops
+            A->B: req_AB
+            B->B: req_BB
+            loop fortest
+              B->B: req_BB_looplevel1
+            end
+            B-->A: resp_BA
+            `;
+            var sequenceDiagram = new SequenceDiagram();
+            sequenceDiagram.load(input);
+            //sequenceDiagram.draw("diagram-container");
+            //sequenceDiagram.debug();
+            /*
+              loop innerloop
+                B->B: req_BB_looplevel2
+              end
+            */
+        </script>
+    </body>
+</html>
