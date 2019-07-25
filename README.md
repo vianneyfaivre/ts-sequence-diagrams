@@ -22,6 +22,7 @@ Bugs:
 * trim messages
 
 Site:
+* use https://mithril.js.org/
 * Textarea + SVG 
 * Draw on input/textarea change
 * Display parsing errors

@@ -72,12 +72,12 @@
   }
 */
 var SequenceDiagram = (function(){
-var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[5,8,10,11,12,16,17,19,25],$V1=[1,16],$V2=[1,18],$V3=[25,30,31];
+var o=function(k,v,o,l){for(o=o||{},l=k.length;l--;o[k[l]]=v);return o},$V0=[5,10,11,12,13,17,18,20,26],$V1=[1,17],$V2=[1,19],$V3=[26,31,32];
 var parser = {trace: function trace () { },
 yy: {},
-symbols_: {"error":2,"grammar_start":3,"document":4,"EOF":5,"line":6,"statement":7,"BEGIN_LOOP":8,"message":9,"END_LOOP":10,"NL":11,"participant":12,"actor":13,"signal":14,"note_statement":15,"title":16,"destroy":17,"actor_destroy":18,"note":19,"placement":20,"over":21,"left_of":22,"right_of":23,"signaltype":24,"ACTOR":25,"linetype":26,"arrowtype":27,"REQUEST":28,"RESPONSE":29,"ACTOR_CREATION":30,"ARROW":31,"MESSAGE":32,"$accept":0,"$end":1},
-terminals_: {2:"error",5:"EOF",8:"BEGIN_LOOP",10:"END_LOOP",11:"NL",12:"participant",16:"title",17:"destroy",19:"note",21:"over",22:"left_of",23:"right_of",25:"ACTOR",28:"REQUEST",29:"RESPONSE",30:"ACTOR_CREATION",31:"ARROW",32:"MESSAGE"},
-productions_: [0,[3,2],[4,0],[4,2],[6,1],[6,2],[6,1],[6,1],[7,2],[7,1],[7,1],[7,2],[7,2],[15,4],[15,4],[20,1],[20,1],[14,4],[18,1],[13,1],[24,2],[24,1],[26,1],[26,1],[27,1],[27,1],[9,1]],
+symbols_: {"error":2,"grammar_start":3,"document":4,"EOF":5,"line":6,"statement":7,"BEGIN_BLOCK":8,"message":9,"END_BLOCK":10,"NL":11,"BEGIN_LOOP":12,"participant":13,"actor":14,"signal":15,"note_statement":16,"title":17,"destroy":18,"actor_destroy":19,"note":20,"placement":21,"over":22,"left_of":23,"right_of":24,"signaltype":25,"ACTOR":26,"linetype":27,"arrowtype":28,"REQUEST":29,"RESPONSE":30,"ACTOR_CREATION":31,"ARROW":32,"MESSAGE":33,"$accept":0,"$end":1},
+terminals_: {2:"error",5:"EOF",10:"END_BLOCK",11:"NL",12:"BEGIN_LOOP",13:"participant",17:"title",18:"destroy",20:"note",22:"over",23:"left_of",24:"right_of",26:"ACTOR",29:"REQUEST",30:"RESPONSE",31:"ACTOR_CREATION",32:"ARROW",33:"MESSAGE"},
+productions_: [0,[3,2],[4,0],[4,2],[6,1],[6,2],[6,1],[6,1],[8,1],[7,2],[7,1],[7,1],[7,2],[7,2],[16,4],[16,4],[21,1],[21,1],[15,4],[19,1],[14,1],[25,2],[25,1],[27,1],[27,1],[28,1],[28,1],[9,1]],
 performAction: function anonymous(yytext, yyleng, yylineno, yy, yystate /* action[1] */, $$ /* vstack */, _$ /* lstack */) {
 /* this == yyval */
 
@@ -87,54 +87,54 @@ case 1:
  return yy; 
 break;
 case 4:
- yy.pushStatement($$[$0]) 
+ 
 break;
 case 5:
- yy.forBlockStart($$[$0]) 
+ yy.blockStart($$[$0-1], $$[$0]) 
 break;
 case 6:
- yy.forBlockEnd() 
+ yy.blockEnd() 
 break;
-case 8: case 10:
+case 9: case 11:
  $$[$0]; 
 break;
-case 9:
+case 10:
  yy.addSignal($$[$0]); 
 break;
-case 11:
+case 12:
  yy.setTitle($$[$0]);  
 break;
-case 12:
+case 13:
  yy.destroyActor($$[$0])
 break;
-case 13: case 14:
+case 14: case 15:
  this.$ = yy.createNote($$[$0-1], $$[$0-2], $$[$0]); 
 break;
-case 15:
+case 16:
  this.$ = "PLACEMENT_LEFTOF"; 
 break;
-case 16:
+case 17:
  this.$ = "PLACEMENT_RIGHTOF"; 
 break;
-case 17:
+case 18:
  this.$ = yy.createSignal($$[$0-3], $$[$0-2], $$[$0-1], $$[$0]); 
 break;
-case 18: case 19:
+case 19: case 20:
  this.$ = $$[$0] 
 break;
-case 20:
+case 21:
  this.$ = $$[$0-1] + '_' + $$[$0]; 
 break;
-case 21: case 22: case 23: case 24: case 25:
+case 22: case 23: case 24: case 25: case 26:
  this.$ = $$[$0]; 
 break;
-case 26:
+case 27:
  this.$ = $$[$0].substring(1); 
 break;
 }
 },
-table: [o($V0,[2,2],{3:1,4:2}),{1:[3]},{5:[1,3],6:4,7:5,8:[1,6],10:[1,7],11:[1,8],12:[1,9],13:14,14:10,15:11,16:[1,12],17:[1,13],19:[1,15],25:$V1},{1:[2,1]},o($V0,[2,3]),o($V0,[2,4]),{9:17,32:$V2},o($V0,[2,6]),o($V0,[2,7]),{13:19,25:$V1},o($V0,[2,9]),o($V0,[2,10]),{9:20,32:$V2},{18:21,25:[1,22]},{24:23,26:24,28:[1,25],29:[1,26]},{20:27,21:[1,28],22:[1,29],23:[1,30]},o([5,8,10,11,12,16,17,19,25,28,29,32],[2,19]),o($V0,[2,5]),o($V0,[2,26]),o($V0,[2,8]),o($V0,[2,11]),o($V0,[2,12]),o($V0,[2,18]),{13:31,25:$V1},{25:[2,21],27:32,30:[1,33],31:[1,34]},o($V3,[2,22]),o($V3,[2,23]),{13:35,25:$V1},{13:36,25:$V1},{25:[2,15]},{25:[2,16]},{9:37,32:$V2},{25:[2,20]},{25:[2,24]},{25:[2,25]},{9:38,32:$V2},{9:39,32:$V2},o($V0,[2,17]),o($V0,[2,13]),o($V0,[2,14])],
-defaultActions: {3:[2,1],29:[2,15],30:[2,16],32:[2,20],33:[2,24],34:[2,25]},
+table: [o($V0,[2,2],{3:1,4:2}),{1:[3]},{5:[1,3],6:4,7:5,8:6,10:[1,7],11:[1,8],12:[1,14],13:[1,9],14:15,15:10,16:11,17:[1,12],18:[1,13],20:[1,16],26:$V1},{1:[2,1]},o($V0,[2,3]),o($V0,[2,4]),{9:18,33:$V2},o($V0,[2,6]),o($V0,[2,7]),{14:20,26:$V1},o($V0,[2,10]),o($V0,[2,11]),{9:21,33:$V2},{19:22,26:[1,23]},{33:[2,8]},{25:24,27:25,29:[1,26],30:[1,27]},{21:28,22:[1,29],23:[1,30],24:[1,31]},o([5,10,11,12,13,17,18,20,26,29,30,33],[2,20]),o($V0,[2,5]),o($V0,[2,27]),o($V0,[2,9]),o($V0,[2,12]),o($V0,[2,13]),o($V0,[2,19]),{14:32,26:$V1},{26:[2,22],28:33,31:[1,34],32:[1,35]},o($V3,[2,23]),o($V3,[2,24]),{14:36,26:$V1},{14:37,26:$V1},{26:[2,16]},{26:[2,17]},{9:38,33:$V2},{26:[2,21]},{26:[2,25]},{26:[2,26]},{9:39,33:$V2},{9:40,33:$V2},o($V0,[2,18]),o($V0,[2,14]),o($V0,[2,15])],
+defaultActions: {3:[2,1],14:[2,8],30:[2,16],31:[2,17],33:[2,21],34:[2,25],35:[2,26]},
 parseError: function parseError (str, hash) {
     if (hash.recoverable) {
         this.trace(str);
@@ -618,9 +618,9 @@ case 1:/* skip whitespace */
 break;
 case 2:/* skip comments */
 break;
-case 3:return 17;
+case 3:return 18;
 break;
-case 4:return 12;
+case 4:return 13;
 break;
 case 5:return 'PLACEMENT_LEFTOF';
 break;
@@ -628,33 +628,33 @@ case 6:return 'PLACEMENT_RIGHTOF';
 break;
 case 7:return 'PLACEMENT_OVER';
 break;
-case 8:return 19;
+case 8:return 20;
 break;
-case 9: this.begin('title_var'); return 16; 
+case 9: this.begin('title_var'); return 17; 
 break;
-case 10: this.popState(); return 32; 
+case 10: this.popState(); return 33; 
 break;
-case 11: this.begin('loop_var'); return 8; 
+case 11: this.begin('loop_var'); return 12; 
 break;
-case 12: this.popState(); return 32; 
+case 12: this.popState(); return 33; 
 break;
 case 13: return 10; 
 break;
 case 14:return ',';
 break;
-case 15:return 25;
+case 15:return 26;
 break;
-case 16:return 25;
+case 16:return 26;
 break;
-case 17:return 29;
+case 17:return 30;
 break;
-case 18:return 28;
+case 18:return 29;
 break;
-case 19:return 30;
+case 19:return 31;
 break;
-case 20:return 31;
+case 20:return 32;
 break;
-case 21:return 32;
+case 21:return 33;
 break;
 case 22:return 5;
 break;

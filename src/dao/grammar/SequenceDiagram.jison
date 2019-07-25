@@ -25,9 +25,9 @@
 "note"            return 'note';
 "title"           { this.begin('title_var'); return 'title'; }
 <title_var>[^\r\n]+   { this.popState(); return 'MESSAGE'; }
-"loop"           			{ this.begin('loop_var'); return 'BEGIN_LOOP'; }
-<loop_var>[^\r\n]+   		{ this.popState(); return 'MESSAGE'; }
-"end"			  { return 'END_LOOP'; }
+"loop"           	  { this.begin('loop_var'); return 'BEGIN_LOOP'; }
+<loop_var>[^\r\n]+    { this.popState(); return 'MESSAGE'; }
+"end"			  { return 'END_BLOCK'; }
 ","               return ',';
 [^\->:,\r\n"]+    return 'ACTOR';
 \"[^"]+\"         return 'ACTOR';
@@ -55,10 +55,14 @@ document
 	;
 
 line
-	: statement 					{ yy.pushStatement($1) }
-	| BEGIN_LOOP message			{ yy.forBlockStart($2) }
-	| END_LOOP						{ yy.forBlockEnd() }
+	: statement 					{ }
+	| BEGIN_BLOCK message			{ yy.blockStart($1, $2) }
+	| END_BLOCK						{ yy.blockEnd() }
 	| 'NL'
+	;
+
+BEGIN_BLOCK
+    : BEGIN_LOOP 				{}
 	;
 
 statement

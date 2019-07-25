@@ -1,4 +1,4 @@
-import { Actor, Signal } from "./model";
+import { Actor, Signal, BlockData, BlockType, Blocks } from "./model";
 
 export class SequenceDiagramData {
 
@@ -6,6 +6,7 @@ export class SequenceDiagramData {
     title?: string;
     actors: Actor[];
     signals: Signal[];
+    blocks: Blocks = new Blocks();
 
     constructor() {
         this.actorOrder = 0;
@@ -94,19 +95,21 @@ export class SequenceDiagramData {
         }
     }
 
-    inLoop = false;
-    
-    pushStatement = function(statement: string) {
-        console.log(`Statement: ${statement} (in loop=${this.inLoop})`);
-    }
-
-    forBlockStart = function(loopLabel: string) {
-        console.log(`Starting loop ${loopLabel}`);
+    blockStart = function(blockType: BlockType, label: string) {
+        console.log(`Starting ${blockType} '${label}'`);
         this.inLoop = true;
+        const nextId = this.blocks.nextLevel();
+
+        if(blockType != null) {
+            this.blocks.push(new BlockData(nextId, blockType, label));
+        }
+        else {
+            console.warn(`Unknown block type for block with label '${label}'`);
+        }
     }
 
-    forBlockEnd = function() {
-        console.log(`Ending loop`);
-        this.inLoop = false;
+    blockEnd = function() {
+        console.log(`Ending block ${this.blocks.last()}`);
+        this.blocks.pop();
     }
 }

@@ -16,6 +16,9 @@
             B->B: req_BB
             loop fortest
               B->B: req_BB_looplevel1
+              loop innerloop
+                B->B: req_BB_looplevel2
+              end
             end
             B-->A: resp_BA
             `;
@@ -24,9 +27,7 @@
             //sequenceDiagram.draw("diagram-container");
             //sequenceDiagram.debug();
             /*
-              loop innerloop
-                B->B: req_BB_looplevel2
-              end
+              
             */
         </script>
     </body>

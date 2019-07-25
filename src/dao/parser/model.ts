@@ -71,3 +71,49 @@ export class Signal {
         }
     }
 }
+
+
+export class Blocks {
+
+    blocks: BlockData[] = [];
+
+    nextLevel(): number {
+        return this.blocks.length + 1;
+    }
+
+    push(block: BlockData): void {
+        this.blocks.push(block);
+    }
+
+    pop(): BlockData {
+        return this.blocks.pop();
+    }
+
+    last(): BlockData {
+        if(this.blocks.length > 0) {
+            return this.blocks[this.blocks.length - 1];
+        }
+
+        return null;
+    }
+
+    inLoop(): boolean {
+        return this.blocks.length > 0;
+    }
+}
+
+export enum BlockType {
+    loop
+}
+
+export class BlockData {
+
+    constructor(readonly level: number,
+                readonly type: BlockType,
+                readonly label: string
+        ) {}
+        
+    toString(): string {
+        return `Level=${this.level} Type=${this.type} Label=${this.label}`;
+    }
+}
