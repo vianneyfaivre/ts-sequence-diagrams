@@ -73,32 +73,24 @@ export class Signal {
 }
 
 
-export class Blocks {
+export class BlockStack {
 
+    currentDepth: number = 0;
     blocks: BlockData[] = [];
 
-    nextLevel(): number {
-        return this.blocks.length + 1;
-    }
-
-    push(block: BlockData): void {
+    startBlock(block: BlockData): void {
+        block.level = this.currentDepth++;
         this.blocks.push(block);
     }
 
-    pop(): BlockData {
-        return this.blocks.pop();
+    endBlock(): BlockData {
+        const block = this.blocks[this.currentDepth - 1];
+        this.currentDepth--;
+        return block;
     }
 
-    last(): BlockData {
-        if(this.blocks.length > 0) {
-            return this.blocks[this.blocks.length - 1];
-        }
-
-        return null;
-    }
-
-    inLoop(): boolean {
-        return this.blocks.length > 0;
+    toString(): string {
+        return `Stack with ${this.blocks.length} blocks`;
     }
 }
 
@@ -108,8 +100,9 @@ export enum BlockType {
 
 export class BlockData {
 
-    constructor(readonly level: number,
-                readonly type: BlockType,
+    level: number;
+
+    constructor(readonly type: BlockType,
                 readonly label: string
         ) {}
         

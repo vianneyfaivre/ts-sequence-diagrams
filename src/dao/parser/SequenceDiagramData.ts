@@ -1,4 +1,4 @@
-import { Actor, Signal, BlockData, BlockType, Blocks } from "./model";
+import { Actor, Signal, BlockData, BlockType, BlockStack } from "./model";
 
 export class SequenceDiagramData {
 
@@ -6,12 +6,15 @@ export class SequenceDiagramData {
     title?: string;
     actors: Actor[];
     signals: Signal[];
-    blocks: Blocks = new Blocks();
+    allBlocksStack: BlockStack[];
+    private currentBlockStack: BlockStack;
 
     constructor() {
         this.actorOrder = 0;
         this.actors = [];
         this.signals = [];
+        this.allBlocksStack = [];
+        this.currentBlockStack = new BlockStack();
     }
     
     getOrCreate = function(name: string, createdBySignal: boolean) {
@@ -96,12 +99,11 @@ export class SequenceDiagramData {
     }
 
     blockStart = function(blockType: BlockType, label: string) {
-        console.log(`Starting ${blockType} '${label}'`);
-        this.inLoop = true;
-        const nextId = this.blocks.nextLevel();
-
+        
         if(blockType != null) {
-            this.blocks.push(new BlockData(nextId, blockType, label));
+            const block = new BlockData(blockType, label);
+            this.currentBlockStack.startBlock(block);
+            console.log(`Starting ${blockType} block #${block.level} - '${label}'`);
         }
         else {
             console.warn(`Unknown block type for block with label '${label}'`);
@@ -109,7 +111,15 @@ export class SequenceDiagramData {
     }
 
     blockEnd = function() {
-        console.log(`Ending block ${this.blocks.last()}`);
-        this.blocks.pop();
+        const lastBlock: BlockData = this.currentBlockStack.endBlock();
+
+        if(lastBlock != null) {
+            console.log(`Ending ${lastBlock.type} block #${this.currentBlockStack.currentDepth} - '${lastBlock.label}'`);
+    
+            if(this.currentBlockStack.currentDepth <= 0) {
+                this.allBlocksStack.push(this.currentBlockStack);
+                this.currentBlockStack = new BlockStack();
+            }
+        }
     }
 }

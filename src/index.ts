@@ -34,6 +34,8 @@ export default class SequenceDiagram {
             this.svgEngine.drawTitle(this.data.title);
         }
 
+        this.svgEngine.drawBlocks(this.data.allBlocksStack);
+
         this.svgEngine.resizeSvg();
     }
 

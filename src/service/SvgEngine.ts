@@ -1,6 +1,6 @@
 import { ActorElement, SignalElement, SignalType, LineType, Dimensions, TitleElement } from "../dao/draw/model";
 import ItemsGenerator from "../facade/ItemsGenerator";
-import { Signal, Actor } from "../dao/parser/model";
+import { Signal, Actor, BlockStack } from "../dao/parser/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
 import AdjustmentsEngine from "../facade/AdjustmentsEngine";
 import {Element} from "@svgdotjs/svg.js";
@@ -199,6 +199,10 @@ export class SvgEngine {
         console.log(`Actors sorted: ${allActors}`);
 
         this.adjustmentsEngine.adjustActorsAndSignals(actorsSorted);
+    }
+
+    drawBlocks(blocks: BlockStack[]): void {
+        console.log(`Drawing ${blocks}`);
     }
 
     resizeSvg(): void {
