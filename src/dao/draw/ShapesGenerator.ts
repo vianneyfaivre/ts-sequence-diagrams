@@ -73,6 +73,11 @@ export class ShapesGenerator {
                 "font-size": 20
             });
         }
+        else if(options && options.includes(TextOption.SMALL)) {
+            t.attr({
+                "font-size": 10
+            });
+        }
          
         return t;
     }

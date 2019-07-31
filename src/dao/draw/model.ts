@@ -225,7 +225,8 @@ export enum LineOption {
 
 export enum TextOption {
     CENTERED,
-    TITLE
+    TITLE,
+    SMALL
 }
 
 export class Dimensions {
@@ -278,12 +279,27 @@ export class Dimensions {
     /* Padding to use when having several inner blocks */
     static BLOCK_INNER_PADDING = 10;
 
-    /* Block Rectangle X Padding */
-    static BLOCK_PADDING_X = 10; 
+    /* Block Rectangle X Left Padding */
+    static BLOCK_PADDING_X_LEFT = 30; 
+
+    /* Block Rectangle X Left Padding */
+    static BLOCK_PADDING_X_RIGHT = 10; 
 
     /* Block Rectangle Y Top Padding */
     static BLOCK_PADDING_Y_TOP = 10; 
 
     /* Block Rectangle Y Bottom Padding */
     static BLOCK_PADDING_Y_BOTTOM = 5; 
+
+    /* Block Type Text (ex: loop) X Padding */
+    static BLOCK_TYPE_TEXT_PADDING_X = 2;
+
+    /* Block Type Text (ex: loop) Y Padding */
+    static BLOCK_TYPE_TEXT_PADDING_Y = 10; 
+
+    /* Block Type Rect Width */
+    static BLOCK_TYPE_RECT_WIDTH = 25; 
+
+    /* Block Type Rect Height */
+    static BLOCK_TYPE_RECT_HEIGHT = 15; 
 }

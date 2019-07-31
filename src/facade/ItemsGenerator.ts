@@ -103,10 +103,13 @@ export default class ItemsGenerator {
             const blockTypeRect: Rect = this.shapesGenerator.drawRect(x, y, width, height);
 
             // Drawing block label
-            const blockLabel: Text = null;
+            const blockLabel: Text = this.shapesGenerator.drawText(
+                x + Dimensions.BLOCK_TYPE_TEXT_PADDING_X, 
+                y + Dimensions.BLOCK_TYPE_TEXT_PADDING_Y, 
+                block.type.toString(), [TextOption.SMALL]);
 
              // Drawing block Rect
-             const blockRect: Rect = null;
+             const blockRect: Rect = this.shapesGenerator.drawRect(x, y, Dimensions.BLOCK_TYPE_RECT_WIDTH, Dimensions.BLOCK_TYPE_RECT_HEIGHT);
 
             blockElements.push(new BlockElement(blockTypeLabel, blockTypeRect, blockLabel, blockRect));
 
@@ -133,11 +136,11 @@ export default class ItemsGenerator {
                 const [lineY1, lineY2] = signalElement.getLineY();
 
                 if(!x1 || lineX1 < x1) {
-                    x1 = lineX1 - Dimensions.BLOCK_PADDING_X;
+                    x1 = lineX1 - Dimensions.BLOCK_PADDING_X_LEFT;
                 }
 
                 if(!x2 || lineX2 > x2) {
-                    x2 = lineX2 + Dimensions.BLOCK_PADDING_X;
+                    x2 = lineX2 + Dimensions.BLOCK_PADDING_X_RIGHT;
                 }
 
                 if(!y1 || lineY1 < y1) {
