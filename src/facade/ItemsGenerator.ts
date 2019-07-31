@@ -1,17 +1,14 @@
-import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption, TitleElement } from "../dao/draw/model";
+import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption, TitleElement, BlockStackElement, BlockElement } from "../dao/draw/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
-import { Actor, Signal } from "../dao/parser/model";
-import {Element, Line} from "@svgdotjs/svg.js";
+import { Actor, Signal, BlockStack } from "../dao/parser/model";
+import {Element, Line, Rect, Text} from "@svgdotjs/svg.js";
 
 /**
  * Generates sequence diagrams items: Actor, Signal, Note, ...
  */
 export default class ItemsGenerator {
 
-    signalCount: number;
-
     constructor(readonly shapesGenerator: ShapesGenerator) {
-        this.signalCount = 0;
     }
 
     drawTitle(x: string, y: number, title: string): TitleElement {
@@ -78,6 +75,96 @@ export default class ItemsGenerator {
         }
     }
 
+    drawBlockStack(blockStack: BlockStack, signalElements: SignalElement[]): BlockStackElement {
+
+        let blockStackPadding = 10 * blockStack.blocks.length; // FIXME dimensions
+        const blockElements: BlockElement[] = [];
+
+        for(const i in blockStack.blocks) {
+            const block = blockStack.blocks[i];
+
+            const otherBlocks = blockStack.blocks.slice(+i, blockStack.blocks.length);
+            const otherBlocksSignals: Signal[] = [];
+            for(const otherBlock of otherBlocks) {
+                otherBlocksSignals.push(...otherBlock.signals);
+            }
+
+            const blockStackSignals = block.signals;
+            blockStackSignals.push(...otherBlocksSignals);
+
+            console.log(`Drawing block #${block.level} '${block.label}': ${blockStackSignals.map(s => s.message)}`);
+
+            const [x, y, width, height] = this._getBlockRectDimensions(blockStackSignals, signalElements, blockStackPadding);
+
+            // Drawing block type label
+            const blockTypeLabel: Text = null;
+
+            // Drawing block type small rect
+            const blockTypeRect: Rect = this.shapesGenerator.drawRect(x, y, width, height);
+
+            // Drawing block label
+            const blockLabel: Text = null;
+
+             // Drawing block Rect
+             const blockRect: Rect = null;
+
+            blockElements.push(new BlockElement(blockTypeLabel, blockTypeRect, blockLabel, blockRect));
+
+            blockStackPadding -= 10; // FIXME dimensions
+        }
+
+        return new BlockStackElement(blockElements);
+    }
+
+    _getBlockRectDimensions(signals: Signal[], signalElements: SignalElement[], blockStackPadding: number): [number, number, number, number] {
+        
+        let x1 = null;
+        let x2 = null;
+        let y1 = null;
+        let y2 = null;
+        const PADDING_X = 25; // FIXME dimensions
+        const PADDING_Y = 5; // FIXME dimensions
+
+        for(const signal of signals) {
+            
+            const signalElement = signalElements.filter(el => el.id === signal.id)[0];
+            
+            if(signalElement) {
+
+                const [lineX1, lineX2] = signalElement.getLineX();
+                const [lineY1, lineY2] = signalElement.getLineY();
+
+                if(!x1 || lineX1 < x1) {
+                    x1 = lineX1 - PADDING_X;
+                }
+
+                if(!x2 || lineX2 > x2) {
+                    x2 = lineX2 + PADDING_X;
+                }
+
+                if(!y1 || lineY1 < y1) {
+                    y1 = lineY1 - PADDING_Y;
+                }
+
+                if(!y2 || lineY2 > y2) {
+                    y2 = lineY2 + PADDING_Y;
+                }
+            }
+        }
+
+        // Update points when the stack contains several blocks
+        x1 = x1 - blockStackPadding;
+        x2 = x2 + blockStackPadding;
+        y1 = y1 - blockStackPadding;
+        y2 = y2 + blockStackPadding;
+
+        const width = x2 - x1;
+        const height = y2 - y1;
+
+        return [x1, y1, width, height];
+    }
+
+
     _drawActorCreatedBySignal(signal: Signal, x: number, y: number, offsetY: number): ActorElement {
         // Draw rectangle
         const rect = this.shapesGenerator.drawRect(x, y, Dimensions.ACTOR_RECT_WIDTH, Dimensions.ACTOR_RECT_HEIGHT);
@@ -131,7 +218,7 @@ export default class ItemsGenerator {
         const textY = lineY - Dimensions.SIGNAL_TEXT_PADDING_Y;
         const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
-        return SignalElement.forward(this.signalCount++, line, signal.lineType, signal.type, text, actorElA, actorElB);
+        return SignalElement.forward(signal.id, line, signal.lineType, signal.type, text, actorElA, actorElB);
     }
 
     _drawSelfSignal(signal: Signal, offsetY: number, actorElA: ActorElement): SignalElement {
@@ -153,7 +240,7 @@ export default class ItemsGenerator {
         const textY = y1 + Dimensions.SIGNAL_SELF_TEXT_PADDING_Y;
         const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
-        return SignalElement.self(this.signalCount++, lines, signal.lineType, text, actorElA);
+        return SignalElement.self(signal.id, lines, signal.lineType, text, actorElA);
     }
 
     drawSignalAndActor(signal: Signal, actorElA: ActorElement, offsetY: number) : [SignalElement, ActorElement] {
@@ -176,7 +263,7 @@ export default class ItemsGenerator {
         const rectY = signalY - (Dimensions.ACTOR_RECT_HEIGHT / 2);
         const actorElB = this._drawActorCreatedBySignal(signal, rectX, rectY, offsetY);
         
-        const signalEl = SignalElement.forward(this.signalCount++, line, LineType.REQUEST, SignalType.ACTOR_CREATION, text, actorElA, actorElB);
+        const signalEl = SignalElement.forward(signal.id, line, LineType.REQUEST, SignalType.ACTOR_CREATION, text, actorElA, actorElB);
 
         return [signalEl, actorElB];
     }

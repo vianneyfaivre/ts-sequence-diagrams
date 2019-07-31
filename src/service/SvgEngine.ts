@@ -201,8 +201,13 @@ export class SvgEngine {
         this.adjustmentsEngine.adjustActorsAndSignals(actorsSorted);
     }
 
-    drawBlocks(blocks: BlockStack[]): void {
-        console.log(`Drawing ${blocks}`);
+    drawBlocks(blocksStacks: BlockStack[]): void {
+        console.log(`** DRAWING ${blocksStacks.length} BLOCKS **`);
+
+        for(const blockStack of blocksStacks) {
+            console.log(`* Drawing block: ${blockStack}`);
+            this.itemsGenerator.drawBlockStack(blockStack, this.signals);
+        }
     }
 
     resizeSvg(): void {

@@ -8,6 +8,7 @@ export class SequenceDiagramData {
     signals: Signal[];
     allBlocksStack: BlockStack[];
     private currentBlockStack: BlockStack;
+    private currentSignalIndex: number;
 
     constructor() {
         this.actorOrder = 0;
@@ -15,6 +16,7 @@ export class SequenceDiagramData {
         this.signals = [];
         this.allBlocksStack = [];
         this.currentBlockStack = new BlockStack();
+        this.currentSignalIndex = 0;
     }
     
     getOrCreate = function(name: string, createdBySignal: boolean) {
@@ -59,7 +61,7 @@ export class SequenceDiagramData {
         }
 
         if(actorA_ !== null && actorB_ != null) {
-            return Signal.simple(actorA_, actorB_, lineType, arrowType, message);
+            return Signal.simple(this.currentSignalIndex++, actorA_, actorB_, lineType, arrowType, message);
         } else {
             console.error(`Unable to parse : ${actorA.toString()} ${signalType} ${actorB.toString()}`);
         }
@@ -72,6 +74,12 @@ export class SequenceDiagramData {
     addSignal = function(signal: Signal) {
         console.log(`Adding signal : ${signal.toString()}`);
         this.signals.push(signal);
+
+        const currentBlock = this.currentBlockStack.blocks[this.currentBlockStack.currentDepth - 1];
+        if(currentBlock) {
+            console.debug(`Adding that signal in current block stack in block #${this.currentBlockStack.currentDepth}`);
+            currentBlock.signals.push(signal);
+        }
     }
 
     setTitle = function(title: string) {
@@ -89,7 +97,7 @@ export class SequenceDiagramData {
         if(actor_) {
 
             if(actor_.createdBySignal === true) {
-                this.signals.push(Signal.destroy(actor_));
+                this.signals.push(Signal.destroy(this.currentSignalIndex++, actor_));
             } else {
                 console.error(`Unable to destroy actor '${actor}' because it has not been created by a signal`);
             }

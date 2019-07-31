@@ -1,5 +1,5 @@
 import {Element, Text, Line, Rect} from "@svgdotjs/svg.js";
-import { Actor, Signal } from '../parser/model';
+import { Actor, Signal, BlockData } from '../parser/model';
 
 export class TitleElement {
     constructor(readonly title: Text) {
@@ -78,6 +78,21 @@ export class ActorElement {
     }
 }
 
+export class BlockStackElement {
+    
+    constructor(readonly blocks: BlockElement[]) {
+    }
+}
+
+export class BlockElement {
+
+    constructor(readonly blockTypeLabel: Text,
+                readonly blockTypeRect: Rect,
+                readonly blockLabel: Text,
+                readonly blockRect: Rect) {
+    }
+}
+
 export class CrossElement {
     constructor(
         readonly line1: Line, 
@@ -149,13 +164,39 @@ export class SignalElement {
         return this.actorA.actor.name === this.actorB.actor.name; 
     }
 
+    getLineX(): [number, number] {
+        if(this.lines && this.lines.length > 0) {
+            return [this.lines[0].bbox().x, this.text.bbox().x2];
+        }
+        
+        if(this.line) {
+            return [this.line.bbox().x, this.line.bbox().x2];
+        }
+
+        // TODO error handling
+        return [0, 0];
+    }
+
+    getLineY(): [number, number] {
+        if(this.lines && this.lines.length > 0) {
+            return [this.lines[0].bbox().y, this.lines[this.lines.length-1].bbox().y];
+        }
+        
+        if(this.line) {
+            return [this.line.bbox().y, this.line.bbox().y];
+        }
+
+        // TODO error handling
+        return [0, 0];
+    }
+
     toString(): string {
         const toSelf = this.actorA.actor.name === this.actorB.actor.name;
         
         if(toSelf === true) {
-            return `Self-Signal '${this.actorA.actor.name}': '${this.text.toString()}'`;
+            return `Self-Signal #${this.id} '${this.actorA.actor.name}': '${this.text.text()}'`;
         } else {
-            return `Signal from '${this.actorA.actor.name}' to '${this.actorB.actor.name}': '${this.text.toString()}'`;
+            return `Signal from #${this.id} '${this.actorA.actor.name}' to '${this.actorB.actor.name}': '${this.text.text()}'`;
         }
     }
 }

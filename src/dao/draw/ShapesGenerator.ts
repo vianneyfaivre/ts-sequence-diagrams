@@ -53,7 +53,7 @@ export class ShapesGenerator {
                             .attr({
                                 'stroke': 'black',
                                 'stroke-width': 2,
-                                'fill': 'white'
+                                'fill': 'none'
                             });
     }
 

@@ -13,6 +13,9 @@
             `
             title test loops
             A->B: req_AB
+            loop bloop10
+                B->B: req_BB_bloop10
+            end
             B->B: req_BB
             loop loop10
               B->B: req_BB_loop10
@@ -27,9 +30,6 @@
               end
             end
             B-->A: resp_BA
-            loop bloop10
-                B->B: req_BB_bloop10
-            end
             `;
             var sequenceDiagram = new SequenceDiagram();
             sequenceDiagram.load(input);
