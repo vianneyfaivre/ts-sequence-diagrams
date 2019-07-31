@@ -77,7 +77,7 @@ export default class ItemsGenerator {
 
     drawBlockStack(blockStack: BlockStack, signalElements: SignalElement[]): BlockStackElement {
 
-        let blockStackPadding = 10 * blockStack.blocks.length; // FIXME dimensions
+        let blockStackPadding = Dimensions.BLOCK_INNER_PADDING * blockStack.blocks.length; 
         const blockElements: BlockElement[] = [];
 
         for(const i in blockStack.blocks) {
@@ -110,7 +110,7 @@ export default class ItemsGenerator {
 
             blockElements.push(new BlockElement(blockTypeLabel, blockTypeRect, blockLabel, blockRect));
 
-            blockStackPadding -= 10; // FIXME dimensions
+            blockStackPadding -= Dimensions.BLOCK_INNER_PADDING;
         }
 
         return new BlockStackElement(blockElements);
@@ -122,8 +122,6 @@ export default class ItemsGenerator {
         let x2 = null;
         let y1 = null;
         let y2 = null;
-        const PADDING_X = 25; // FIXME dimensions
-        const PADDING_Y = 5; // FIXME dimensions
 
         for(const signal of signals) {
             
@@ -135,19 +133,19 @@ export default class ItemsGenerator {
                 const [lineY1, lineY2] = signalElement.getLineY();
 
                 if(!x1 || lineX1 < x1) {
-                    x1 = lineX1 - PADDING_X;
+                    x1 = lineX1 - Dimensions.BLOCK_PADDING_X;
                 }
 
                 if(!x2 || lineX2 > x2) {
-                    x2 = lineX2 + PADDING_X;
+                    x2 = lineX2 + Dimensions.BLOCK_PADDING_X;
                 }
 
                 if(!y1 || lineY1 < y1) {
-                    y1 = lineY1 - PADDING_Y;
+                    y1 = lineY1 - Dimensions.BLOCK_PADDING_Y_TOP;
                 }
 
                 if(!y2 || lineY2 > y2) {
-                    y2 = lineY2 + PADDING_Y;
+                    y2 = lineY2 + Dimensions.BLOCK_PADDING_Y_BOTTOM;
                 }
             }
         }
