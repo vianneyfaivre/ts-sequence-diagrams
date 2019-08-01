@@ -212,7 +212,7 @@ export class SvgEngine {
 
     resizeSvg(): void {
         console.log("** RESIZING SVG **");
-        this.adjustmentsEngine.resizeSvg(this.actors, this.title);
+        this.adjustmentsEngine.resizeSvg();
     }
 
     printCurrentState(): void {

@@ -77,6 +77,8 @@ export default class ItemsGenerator {
 
     drawBlockStack(blockStack: BlockStack, signalElements: SignalElement[]): BlockStackElement {
 
+        let oversizedBlock = false;
+        let oversizedBlockWidth = 0;
         let blockStackPadding = Dimensions.BLOCK_INNER_PADDING * blockStack.blocks.length; 
         const blockElements: BlockElement[] = [];
 
@@ -96,32 +98,50 @@ export default class ItemsGenerator {
 
             const [x, y, width, height] = this._getBlockRectDimensions(blockStackSignals, signalElements, blockStackPadding);
             
-            // Drawing block Rect
-            const blockRect: Rect = this.shapesGenerator.drawRect(x, y, width, height, [RectOption.DOTTED, RectOption.THIN]);
-            
             // Drawing block label
-            const blockLabel: Text = this.shapesGenerator.drawText(
+            const blockTypeLabel: Text = this.shapesGenerator.drawText(
                 x + Dimensions.BLOCK_TYPE_TEXT_PADDING_X, 
                 y + Dimensions.BLOCK_TYPE_TEXT_PADDING_Y, 
                 block.type.toString(), [TextOption.SMALL]);
 
-                
             // Drawing block type small rect
             const blockTypeRect: Rect = this.shapesGenerator.drawRect(
                 x, y, 
-                blockLabel.bbox().width + (Dimensions.BLOCK_TYPE_TEXT_PADDING_X * 2), Dimensions.BLOCK_TYPE_RECT_HEIGHT,
+                blockTypeLabel.bbox().width + (Dimensions.BLOCK_TYPE_TEXT_PADDING_X * 2), Dimensions.BLOCK_TYPE_RECT_HEIGHT,
                 [RectOption.THIN]);
-                    
+
             // Drawing block type label
-            const blockTypeLabel: Text = this.shapesGenerator.drawText(
+            const blockLabel: Text = this.shapesGenerator.drawText(
                 blockTypeRect.bbox().x2 + Dimensions.BLOCK_TYPE_TEXT_PADDING_X, 
                 y + Dimensions.BLOCK_TYPE_TEXT_PADDING_Y,
                 block.label, [TextOption.SMALL]
             );
 
+            // Compute rect width based on the label width
+            let rectWidth = width;
+            if(blockLabel.bbox().x2 > (x + width)) {
+                rectWidth = blockLabel.bbox().x2 - x;
+                oversizedBlock = true;
+                oversizedBlockWidth = rectWidth;
+            }
+            
+            // Drawing block Rect
+            const blockRect: Rect = this.shapesGenerator.drawRect(x, y, rectWidth, height, [RectOption.DOTTED, RectOption.THIN]);
+
             blockElements.push(new BlockElement(blockTypeLabel, blockTypeRect, blockLabel, blockRect));
 
             blockStackPadding -= Dimensions.BLOCK_INNER_PADDING;
+        }
+
+        // Resize the whole block stack if it contains an oversized (because of the title) block
+        if(oversizedBlock === true) {
+
+            blockStackPadding = Dimensions.BLOCK_INNER_PADDING * blockStack.blocks.length; 
+
+            for(const blockEl of blockElements) {
+                blockEl.blockRect.width(oversizedBlockWidth + blockStackPadding * 2);
+                blockStackPadding -= Dimensions.BLOCK_INNER_PADDING;
+            }
         }
 
         return new BlockStackElement(blockElements);

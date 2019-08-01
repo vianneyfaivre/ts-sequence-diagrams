@@ -5,7 +5,7 @@
     </head>
 
     <body>
-        <svg id="diagram-container"></svg>
+        <div id="diagram-container"></div>
         
         <script src="../dist/bundle.js"></script>
         <script>
@@ -26,6 +26,10 @@
                 loop loop12
                   B->B: req_BB_loop12
                   B->C: req_BC_loop12
+                  loop loop13 with a very a very a very a very a very long title
+                    B->B: req_BB_loop13
+                    B->C: req_BC_loop13
+                  end
                 end
               end
             end

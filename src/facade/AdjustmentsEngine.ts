@@ -12,58 +12,30 @@ export default class AdjustmentsEngine {
         readonly shapesGenerator: ShapesGenerator) {
     }
 
-    resizeSvg(actors: ActorElement[], title?: TitleElement): void {
+    resizeSvg(): void {
 
-        let svgWidth = 200;
-        let svgHeight = 200;
+        let svgWidth = 0;
+        let svgHeight = 0;
 
-        const lastActor = actors[actors.length - 1];
-        if(lastActor) {
+        this.container.querySelectorAll("rect,text,line").forEach(el => {
 
-            // Compute SVG Width
-            svgWidth = lastActor.topRect.rect.bbox().x2;
-            
-            for (const i in lastActor.selfSignals) {
-                const signal = lastActor.selfSignals[i];
-                
-                const signalTextX2 = signal.text.bbox().x + signal.text.bbox().width;
-                if(signalTextX2 > svgWidth) {
-                    svgWidth = signalTextX2;
-                }
+            const x1 = +el.getAttribute("x");
+            const width = +el.getAttribute("width");
+            const x2 = x1 + width;
+
+            const y1 = +el.getAttribute("y");
+            const height = +el.getAttribute("height");
+            const y2 = y1 + height;
+
+            if(x2 > svgWidth) {
+                svgWidth = x2;
             }
 
-            if(title) {
-                const titleWidth = title.title.bbox().width;
-                if(titleWidth > svgWidth) {
-                    svgWidth = titleWidth + Dimensions.SVG_PADDING * 2;
-                }
-            }
-        }
-
-        // Compute SVG Height
-        for (const i in actors) {
-            const actor = actors[i];
-
-            if(actor.bottomRect) {
-                const tmp = actor.bottomRect.rect.bbox().y + actor.bottomRect.rect.bbox().height;
-
-                if(tmp > svgHeight) {
-                    svgHeight = tmp;
-                }
-            } 
-            
-            if(actor.cross) {
-                const tmp = actor.cross.line1.bbox().y2;
-                if(tmp > svgHeight) {
-                    svgHeight = tmp;
-                }
+            if(y2 > svgHeight) {
+                svgHeight = y2;
             }
             
-            const tmp = actor.line.bbox().y2; 
-            if(tmp > svgHeight) {
-                svgHeight = tmp;
-            }
-        }
+        });
 
         // Size parent <div>
         this.container.style.width = `${svgWidth + Dimensions.SVG_PADDING}px`;
