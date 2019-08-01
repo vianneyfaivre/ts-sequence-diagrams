@@ -1,5 +1,5 @@
 import {Svg, Element, Text, Marker, Rect, Line} from "@svgdotjs/svg.js";
-import { CrossElement, LineOption, TextOption, Dimensions } from './model';
+import { CrossElement, LineOption, TextOption, Dimensions, RectOption } from './model';
 
 /**
  * Generates basic items: rect, text, lines, ...
@@ -47,14 +47,34 @@ export class ShapesGenerator {
         return line;
     }
 
-    drawRect(x: number, y: number, w: number, h: number): Rect {
-        return this.paper.rect(w, h)
-                            .move(x, y)
-                            .attr({
-                                'stroke': 'black',
-                                'stroke-width': 2,
-                                'fill': 'none'
-                            });
+    drawRect(x: number, y: number, w: number, h: number, options?: RectOption[]): Rect {
+
+        const rect = this.paper.rect(w, h).move(x, y);
+        
+        rect.attr({
+            'stroke': 'black',
+            'fill': 'none'
+        });
+        
+
+        if(options && options.includes(RectOption.DOTTED)) {
+            rect.attr({
+                "stroke-dasharray": "20,5"
+            });
+        } 
+
+        if(options && options.includes(RectOption.THIN)) {
+            rect.attr({
+                'stroke-width': 1,
+            });
+        } else {
+            rect.attr({
+                'stroke-width': 2,
+            });
+        }
+        
+        return rect;
+        
     }
 
     drawText(x: number | string , y: number, text: string, options?: TextOption[]): Text {
@@ -75,7 +95,7 @@ export class ShapesGenerator {
         }
         else if(options && options.includes(TextOption.SMALL)) {
             t.attr({
-                "font-size": 10
+                "font-size": 12
             });
         }
          

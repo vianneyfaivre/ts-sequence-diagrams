@@ -1,4 +1,4 @@
-import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption, TitleElement, BlockStackElement, BlockElement } from "../dao/draw/model";
+import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption, TitleElement, BlockStackElement, BlockElement, RectOption } from "../dao/draw/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
 import { Actor, Signal, BlockStack } from "../dao/parser/model";
 import {Element, Line, Rect, Text} from "@svgdotjs/svg.js";
@@ -95,21 +95,29 @@ export default class ItemsGenerator {
             console.log(`Drawing block #${block.level} '${block.label}': ${blockStackSignals.map(s => s.message)}`);
 
             const [x, y, width, height] = this._getBlockRectDimensions(blockStackSignals, signalElements, blockStackPadding);
-
-            // Drawing block type label
-            const blockTypeLabel: Text = null;
-
-            // Drawing block type small rect
-            const blockTypeRect: Rect = this.shapesGenerator.drawRect(x, y, width, height);
-
+            
+            // Drawing block Rect
+            const blockRect: Rect = this.shapesGenerator.drawRect(x, y, width, height, [RectOption.DOTTED, RectOption.THIN]);
+            
             // Drawing block label
             const blockLabel: Text = this.shapesGenerator.drawText(
                 x + Dimensions.BLOCK_TYPE_TEXT_PADDING_X, 
                 y + Dimensions.BLOCK_TYPE_TEXT_PADDING_Y, 
                 block.type.toString(), [TextOption.SMALL]);
 
-             // Drawing block Rect
-             const blockRect: Rect = this.shapesGenerator.drawRect(x, y, Dimensions.BLOCK_TYPE_RECT_WIDTH, Dimensions.BLOCK_TYPE_RECT_HEIGHT);
+                
+            // Drawing block type small rect
+            const blockTypeRect: Rect = this.shapesGenerator.drawRect(
+                x, y, 
+                blockLabel.bbox().width + (Dimensions.BLOCK_TYPE_TEXT_PADDING_X * 2), Dimensions.BLOCK_TYPE_RECT_HEIGHT,
+                [RectOption.THIN]);
+                    
+            // Drawing block type label
+            const blockTypeLabel: Text = this.shapesGenerator.drawText(
+                blockTypeRect.bbox().x2 + Dimensions.BLOCK_TYPE_TEXT_PADDING_X, 
+                y + Dimensions.BLOCK_TYPE_TEXT_PADDING_Y,
+                block.label, [TextOption.SMALL]
+            );
 
             blockElements.push(new BlockElement(blockTypeLabel, blockTypeRect, blockLabel, blockRect));
 

@@ -229,6 +229,11 @@ export enum TextOption {
     SMALL
 }
 
+export enum RectOption {
+    THIN,
+    DOTTED
+}
+
 export class Dimensions {
 
     /* X and Y padding of the whole SVG */
@@ -296,9 +301,6 @@ export class Dimensions {
 
     /* Block Type Text (ex: loop) Y Padding */
     static BLOCK_TYPE_TEXT_PADDING_Y = 10; 
-
-    /* Block Type Rect Width */
-    static BLOCK_TYPE_RECT_WIDTH = 25; 
 
     /* Block Type Rect Height */
     static BLOCK_TYPE_RECT_HEIGHT = 15; 
