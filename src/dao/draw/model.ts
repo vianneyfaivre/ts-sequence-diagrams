@@ -322,6 +322,9 @@ export class Dimensions {
     /* Actor Creation Signal line width */
     static SIGNAL_CREATION_WIDTH = 100;
 
+    /* Block minimum height */
+    static BLOCK_MIN_HEIGHT = 50;
+
     /* Padding to use when having several inner blocks */
     static BLOCK_INNER_PADDING = 10;
 
@@ -332,7 +335,7 @@ export class Dimensions {
     static BLOCK_PADDING_X_RIGHT = 10; 
 
     /* Block Rectangle Y Top Padding */
-    static BLOCK_PADDING_Y_TOP = 10; 
+    static BLOCK_PADDING_Y_TOP = 20; 
 
     /* Block Rectangle Y Bottom Padding */
     static BLOCK_PADDING_Y_BOTTOM = 5; 

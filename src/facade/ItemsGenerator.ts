@@ -147,7 +147,7 @@ export default class ItemsGenerator {
             blockStackPadding -= Dimensions.BLOCK_INNER_PADDING;
         }
 
-        // Resize the whole block stack if it contains an oversized (because of the title) block
+        // Resize the whole block stack if it contains an oversized block (because of the block title)
         if(oversizedBlock === true) {
 
             blockStackPadding = Dimensions.BLOCK_INNER_PADDING * blockStack.blocks.length; 
@@ -212,11 +212,15 @@ export default class ItemsGenerator {
         // Update points when the stack contains several blocks
         x1 = x1 - blockStackPadding;
         x2 = x2 + blockStackPadding;
-        y1 = y1 - blockStackPadding;
+        y1 = y1 - Dimensions.BLOCK_PADDING_Y_TOP;
         y2 = y2 + blockStackPadding;
 
         const width = x2 - x1;
-        const height = y2 - y1;
+        
+        let height = y2 - y1;
+        if(height < Dimensions.BLOCK_MIN_HEIGHT) {
+            height = Dimensions.BLOCK_MIN_HEIGHT;
+        }
 
         return [x1, y1, width, height];
     }
