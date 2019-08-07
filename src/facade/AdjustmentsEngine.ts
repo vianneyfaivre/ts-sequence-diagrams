@@ -1,4 +1,4 @@
-import { LineType, SignalType, Dimensions, ActorElement, SignalElement, TitleElement } from "../dao/draw/model";
+import { LineType, SignalType, Dimensions, ActorElement, SignalElement, TitleElement, BlockStackElement } from "../dao/draw/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
 import {Element} from "@svgdotjs/svg.js";
 
@@ -17,14 +17,14 @@ export default class AdjustmentsEngine {
         let svgWidth = 0;
         let svgHeight = 0;
 
-        this.container.querySelectorAll("rect,text,line").forEach(el => {
+        this.getAllElements().forEach(el => {
 
-            const x1 = +el.getAttribute("x");
-            const width = +el.getAttribute("width");
+            const x1 = el.bbox().x;
+            const width = el.bbox().width;
             const x2 = x1 + width;
 
-            const y1 = +el.getAttribute("y");
-            const height = +el.getAttribute("height");
+            const y1 = el.bbox().y;
+            const height = el.bbox().height;
             const y2 = y1 + height;
 
             if(x2 > svgWidth) {
@@ -47,7 +47,78 @@ export default class AdjustmentsEngine {
             svg.style.width = `${svgWidth + Dimensions.SVG_PADDING}px`;
             svg.style.height = `${svgHeight + Dimensions.SVG_PADDING}px`;
         }
+    }
 
+    /**
+     * For each signal, check if any of the signal (line or text) is overlapped by any of the block which has been already drawn
+     */
+    adjustSignalsOverlappedByBlocks(signals: SignalElement[], blocksStacks: BlockStackElement[], actors: ActorElement[]): void {
+        
+        for(const blockStack of blocksStacks) {
+            
+            // Get the first signal in the block stack
+            const blockFirstSignal = blockStack.firstSignal();
+            
+            // TODO Get the signal just before the first signal in the block stack
+
+            // Get the last signal in the block stack
+            const blockLastSignal = blockStack.lastSignal();
+            
+            // Get the signal just after the last signal in the block stack
+            const nextLastSignal = signals.filter(s => s.id === blockLastSignal.id+1)[0];
+
+            if(blockLastSignal && nextLastSignal) {
+                const blockRectY2 = blockStack.blocks[0].blockRect.bbox().y2;
+                const [nextSignalY1, nextSignalY2] = nextLastSignal.getY();
+                const overlaps = blockRectY2 >= nextSignalY1;
+
+                // if signal is being overlapped, move all the next signals
+                if(overlaps === true) {
+                    const offsetY = (blockRectY2 - nextSignalY2) + Dimensions.DISTANCE_BETWEEN_SIGNALS;
+                    this._moveEverythingBelowSignal(nextLastSignal, offsetY, signals, blocksStacks, actors);
+                }
+
+            }
+        }
+    }
+
+    private _moveEverythingBelowSignal(signal: SignalElement, offsetY: number, signals: SignalElement[], blocksStacks: BlockStackElement[], actors: ActorElement[]): void {
+        
+        console.log(`Moving all elements below signal ${signal.toString()} ${offsetY}px down`);
+        const [nextSignalY1, nextSignalY2] = signal.getY();
+
+        // Get all elements under the signal and extend/move them
+        signals
+         .filter(signal => signal.getLineY()[0] >= nextSignalY2)
+         .forEach(signal => {
+
+            // Move signal down
+            this.translateElementsY(signal.svgElements(), offsetY);
+
+            // Move all actors down
+            actors.forEach(actor => {
+                
+                // Extend line
+                actor.line.attr({y2: actor.line.bbox().y2 + offsetY});
+                
+                // Move actor bottom rectangle
+                if(actor.bottomRect) {
+                    this.translateElementsY(actor.bottomRect.svgElements(), offsetY);
+                }
+
+                // Move destroyed actor
+                if(actor.cross) {
+                    this.translateElementsY(actor.cross.svgElements(), offsetY);
+                }
+            });
+          });
+
+    // Move blocks down
+    blocksStacks
+        .filter(block => block.blocks[0] && block.blocks[0].blockRect.bbox().y >= nextSignalY2)
+        .forEach(block => {
+            this.translateElementsY(block.svgElements(), offsetY);
+        }); 
     }
 
     adjustActorsAndSignals(actors: ActorElement[]): void {
@@ -105,10 +176,6 @@ export default class AdjustmentsEngine {
                 // Move next actor if any of the current actor signals is too long
                 const [shouldMove, offsetX] = this._isSignalTextTooLong(signal, nextActor);
                 if(shouldMove === true) {
-
-                    console.log(`LOL`);
-                    console.log(nextActors);
-
                     nextActors.forEach(a => {
                         console.log(`Moving actor '${a.actor.name}' because of actor '${nextActor.actor.name}' ${offsetX}px to the right`)
                         this._moveActor(a, offsetX);
@@ -353,7 +420,6 @@ export default class AdjustmentsEngine {
 
         const rectWidth = actor.topRect.text.bbox().width + (Dimensions.ACTOR_RECT_MIN_X_PADDING * 2); 
         const lineX = (rectWidth / 2) + actor.topRect.rect.bbox().x;
-        const offsetX = lineX - actor.line.bbox().x;
 
         console.log(`Resizing actor rectangles ${actor.actor.name} to ${rectWidth}px and moving line to x=${lineX}`);
 
@@ -450,17 +516,20 @@ export default class AdjustmentsEngine {
         this.translateElementsX(elementsToMove, offsetX);
     }
     
-    translateElementsX(elements: Element[], offsetX: number): void {
-        // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
+    private translateElementsX(elements: Element[], offsetX: number): void {
         elements
             .filter(element => element != null)
             .forEach(element => element.x(element.x() + offsetX));
     }
 
-    translateElementsY(elements: Element[], offsetY: number): void {
-        // WARN: elements must not be deleted from the SVG because some objects have references that may point to them
+    private translateElementsY(elements: Element[], offsetY: number): void {
         elements
             .filter(element => element != null)
             .forEach(element => element.y(element.y() + offsetY));
+    }
+
+    private getAllElements(): Element[] {
+        const types = ["rect", "line", "text"];
+        return this.shapesGenerator.paper.children().filter(e => types.includes(e.type));
     }
 }

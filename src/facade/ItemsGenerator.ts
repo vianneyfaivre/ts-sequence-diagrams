@@ -75,7 +75,11 @@ export default class ItemsGenerator {
         }
     }
 
-    drawBlockStack(blockStack: BlockStack, signalElements: SignalElement[]): BlockStackElement {
+    /** 
+     * Draw a block and its inner blocks (if any). 
+     * If there are no signals in that block, it won't be drawn and null will be returned
+     */
+    drawBlockStack(blockStack: BlockStack, signalElements: SignalElement[]): BlockStackElement | null {
 
         let oversizedBlock = false;
         let oversizedBlockWidth = 0;
@@ -91,12 +95,22 @@ export default class ItemsGenerator {
                 otherBlocksSignals.push(...otherBlock.signals);
             }
 
-            const blockStackSignals = block.signals;
-            blockStackSignals.push(...otherBlocksSignals);
+            const blockSignals = block.signals;
+            blockSignals.push(...otherBlocksSignals);
 
-            console.log(`Drawing block #${block.level} '${block.label}': ${blockStackSignals.map(s => s.message)}`);
+            // Signals included in that current block only
+            const blockOnlySignalElements = this._getSignalElements(block.signals, signalElements);
+            if(blockOnlySignalElements.length === 0) {
+                console.warn(`Block '${block.label}' is empty so it won't be drawn`);
+                continue;
+            }
 
-            const [x, y, width, height] = this._getBlockRectDimensions(blockStackSignals, signalElements, blockStackPadding);
+            // Signals of that current block + the signals of the inner blocks
+            const blockAndOtherBlockSignalElements = this._getSignalElements(blockSignals, signalElements);
+
+            console.log(`Drawing block #${block.level} '${block.label}': ${blockSignals.map(s => s.message)}`);
+
+            const [x, y, width, height] = this._getBlockRectDimensions(blockAndOtherBlockSignalElements, blockStackPadding);
             
             // Drawing block label
             const blockTypeLabel: Text = this.shapesGenerator.drawText(
@@ -128,7 +142,7 @@ export default class ItemsGenerator {
             // Drawing block Rect
             const blockRect: Rect = this.shapesGenerator.drawRect(x, y, rectWidth, height, [RectOption.DOTTED, RectOption.THIN]);
 
-            blockElements.push(new BlockElement(blockTypeLabel, blockTypeRect, blockLabel, blockRect));
+            blockElements.push(new BlockElement(blockTypeLabel, blockTypeRect, blockLabel, blockRect, blockOnlySignalElements));
 
             blockStackPadding -= Dimensions.BLOCK_INNER_PADDING;
         }
@@ -144,40 +158,54 @@ export default class ItemsGenerator {
             }
         }
 
-        return new BlockStackElement(blockElements);
+        if(blockElements.length === 0) {
+            return null
+        } else {
+            return new BlockStackElement(blockElements);
+        }
     }
 
-    _getBlockRectDimensions(signals: Signal[], signalElements: SignalElement[], blockStackPadding: number): [number, number, number, number] {
+    _getSignalElements(signals: Signal[], signalElements: SignalElement[]): SignalElement[] {
+        const result: SignalElement[] = [];
+
+        for(const signal of signals) {
+            
+            const signalElement = signalElements.filter(el => el.id === signal.id)[0];
+
+            if(signalElement) {
+                result.push(signalElement);
+            }
+        }
+
+        return result;
+    }
+
+    _getBlockRectDimensions(signalElements: SignalElement[], blockStackPadding: number): [number, number, number, number] {
         
         let x1 = null;
         let x2 = null;
         let y1 = null;
         let y2 = null;
 
-        for(const signal of signals) {
+        for(const signalElement of signalElements) {
             
-            const signalElement = signalElements.filter(el => el.id === signal.id)[0];
-            
-            if(signalElement) {
+            const [lineX1, lineX2] = signalElement.getLineX();
+            const [lineY1, lineY2] = signalElement.getLineY();
 
-                const [lineX1, lineX2] = signalElement.getLineX();
-                const [lineY1, lineY2] = signalElement.getLineY();
+            if(!x1 || lineX1 < x1) {
+                x1 = lineX1 - Dimensions.BLOCK_PADDING_X_LEFT;
+            }
 
-                if(!x1 || lineX1 < x1) {
-                    x1 = lineX1 - Dimensions.BLOCK_PADDING_X_LEFT;
-                }
+            if(!x2 || lineX2 > x2) {
+                x2 = lineX2 + Dimensions.BLOCK_PADDING_X_RIGHT;
+            }
 
-                if(!x2 || lineX2 > x2) {
-                    x2 = lineX2 + Dimensions.BLOCK_PADDING_X_RIGHT;
-                }
+            if(!y1 || lineY1 < y1) {
+                y1 = lineY1 - Dimensions.BLOCK_PADDING_Y_TOP;
+            }
 
-                if(!y1 || lineY1 < y1) {
-                    y1 = lineY1 - Dimensions.BLOCK_PADDING_Y_TOP;
-                }
-
-                if(!y2 || lineY2 > y2) {
-                    y2 = lineY2 + Dimensions.BLOCK_PADDING_Y_BOTTOM;
-                }
+            if(!y2 || lineY2 > y2) {
+                y2 = lineY2 + Dimensions.BLOCK_PADDING_Y_BOTTOM;
             }
         }
 

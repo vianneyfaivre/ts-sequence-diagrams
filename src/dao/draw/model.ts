@@ -82,6 +82,23 @@ export class BlockStackElement {
     
     constructor(readonly blocks: BlockElement[]) {
     }
+
+    firstSignal(): SignalElement {
+        return this.blocks[0].signals[0];
+    }
+    
+    lastSignal(): SignalElement {
+        const lastBlock = this.blocks[this.blocks.length -1];
+        return lastBlock.signals[lastBlock.signals.length -1];
+    }
+
+    svgElements(): Element[] {
+        const result = [];
+        for(const block of this.blocks) {
+            result.push(...block.svgElements());
+        }
+        return result;
+    }
 }
 
 export class BlockElement {
@@ -89,7 +106,12 @@ export class BlockElement {
     constructor(readonly blockTypeLabel: Text,
                 readonly blockTypeRect: Rect,
                 readonly blockLabel: Text,
-                readonly blockRect: Rect) {
+                readonly blockRect: Rect, 
+                readonly signals: SignalElement[]) {
+    }
+
+    svgElements(): Element[] {
+        return [this.blockTypeLabel, this.blockTypeRect, this.blockLabel, this.blockRect];
     }
 }
 
@@ -190,14 +212,33 @@ export class SignalElement {
         return [0, 0];
     }
 
-    toString(): string {
-        const toSelf = this.actorA.actor.name === this.actorB.actor.name;
-        
-        if(toSelf === true) {
-            return `Self-Signal #${this.id} '${this.actorA.actor.name}': '${this.text.text()}'`;
-        } else {
-            return `Signal from #${this.id} '${this.actorA.actor.name}' to '${this.actorB.actor.name}': '${this.text.text()}'`;
+    /** Get y1 and y2 across all elements of that signal (lines, text, ...) */
+    getY(): [number, number] {
+
+        // Self signal
+        if(this.lines && this.lines.length > 0) {
+            // y1 = first line y
+            // y2 = third line y
+            return this.getLineY();
         }
+
+        // Classic signal
+        if(this.line) {
+            // y1 = text y1
+            const y1 = this.text.bbox().y;
+
+            // y2 = line y
+            const y2 = this.line.bbox().y;
+
+            return [y1, y2];
+        }
+
+        // TODO error handling
+        return [0, 0];
+    }
+
+    toString(): string {
+        return `#${this.id} '${this.text.text()}'`;
     }
 }
 

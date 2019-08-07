@@ -35,6 +35,7 @@ export default class SequenceDiagram {
         }
 
         this.svgEngine.drawBlocks(this.data.allBlocksStack);
+        this.svgEngine.adjustSignalsOverlappedByBlocks();
 
         this.svgEngine.resizeSvg();
     }

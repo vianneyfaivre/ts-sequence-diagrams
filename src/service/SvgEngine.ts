@@ -1,9 +1,8 @@
-import { ActorElement, SignalElement, SignalType, LineType, Dimensions, TitleElement } from "../dao/draw/model";
+import { ActorElement, SignalElement, SignalType, LineType, Dimensions, TitleElement, BlockStackElement } from "../dao/draw/model";
 import ItemsGenerator from "../facade/ItemsGenerator";
 import { Signal, Actor, BlockStack } from "../dao/parser/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
 import AdjustmentsEngine from "../facade/AdjustmentsEngine";
-import {Element} from "@svgdotjs/svg.js";
 
 /**
  * Generates the whole Sequence Diagram, also it does error handling and logging
@@ -18,6 +17,7 @@ export class SvgEngine {
     actors: ActorElement[];
     signals: SignalElement[];
     destroyedActors: Actor[];
+    blocksStacks: BlockStackElement[];
 
     constructor(svgElementId: string) {
         this.container = document.getElementById(svgElementId) as unknown as HTMLElement;
@@ -29,6 +29,7 @@ export class SvgEngine {
         this.actors = [];
         this.signals = [];
         this.destroyedActors = [];
+        this.blocksStacks = [];
     }
 
     drawTitle(title: string): void {
@@ -174,9 +175,14 @@ export class SvgEngine {
         }
     }
 
+    adjustSignalsOverlappedByBlocks(): void {
+        console.log("** AUTO ADJUSTING SIGNALS THAT ARE OVERLAPPED BY SOME BLOCKS **");
+        this.adjustmentsEngine.adjustSignalsOverlappedByBlocks(this.signals, this.blocksStacks, this.actors);
+    }
+
     adjustActorsAndSignals(): void {
 
-        console.log("** AUTO_ADJUSTING **");
+        console.log("** AUTO ADJUSTING SIGNALS AND ACTORS **");
 
         // a. Reorder actors 
         const actorsSorted = this.actors.sort((e1, e2) => {
@@ -206,7 +212,10 @@ export class SvgEngine {
 
         for(const blockStack of blocksStacks) {
             console.log(`* Drawing block: ${blockStack}`);
-            this.itemsGenerator.drawBlockStack(blockStack, this.signals);
+            const blockStackElement = this.itemsGenerator.drawBlockStack(blockStack, this.signals);
+            if(blockStackElement) {
+                this.blocksStacks.push(blockStackElement);
+            }
         }
     }
 

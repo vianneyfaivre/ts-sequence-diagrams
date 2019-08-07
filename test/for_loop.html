@@ -12,6 +12,10 @@
             var input = 
             `
             title test loops
+            A->*B: crea_AB
+            loop loop_00
+              A->B: req_AB
+            end
             A->B: req_AB
             loop bloop10
                 B->B: req_BB_bloop10
@@ -34,6 +38,12 @@
               end
             end
             B-->A: resp_BA
+            loop loop20
+            end
+            loop loop30
+              B-->A: resp_BA_loop30
+            end
+            destroy B
             `;
             var sequenceDiagram = new SequenceDiagram();
             sequenceDiagram.load(input);

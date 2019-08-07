@@ -3,7 +3,7 @@
 ## TODO
 
 Features:
-* Loops
+* Other kind of blocks: opt, alt, etc...
 * Participants order
 * Notes
 * Actor destroyed then recreated
@@ -14,11 +14,13 @@ Tech Features:
 * Error handling
   * use exceptions: ParsingError, DrawingError
   * use error codes
-* silent logs
+* rewrite logs to have a prefix with the function name
+* Test : describe this app
+* build --production
 
 Bugs:
+* Can't destroy an actor if it has not been created by a signal
 * Double Destroy
-* Handle incorrect inputs
 * trim messages
 
 Site:
