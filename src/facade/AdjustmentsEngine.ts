@@ -55,11 +55,6 @@ export default class AdjustmentsEngine {
     adjustSignalsOverlappedByBlocks(signals: SignalElement[], blocksStacks: BlockStackElement[], actors: ActorElement[]): void {
         
         for(const blockStack of blocksStacks) {
-            
-            // Get the first signal in the block stack
-            const blockFirstSignal = blockStack.firstSignal();
-            
-            // TODO Get the signal just before the first signal in the block stack
 
             // Get the last signal in the block stack
             const blockLastSignal = blockStack.lastSignal();
@@ -80,45 +75,6 @@ export default class AdjustmentsEngine {
 
             }
         }
-    }
-
-    private _moveEverythingBelowSignal(signal: SignalElement, offsetY: number, signals: SignalElement[], blocksStacks: BlockStackElement[], actors: ActorElement[]): void {
-        
-        console.log(`Moving all elements below signal ${signal.toString()} ${offsetY}px down`);
-        const [nextSignalY1, nextSignalY2] = signal.getY();
-
-        // Get all elements under the signal and extend/move them
-        signals
-         .filter(signal => signal.getLineY()[0] >= nextSignalY2)
-         .forEach(signal => {
-
-            // Move signal down
-            this.translateElementsY(signal.svgElements(), offsetY);
-
-            // Move all actors down
-            actors.forEach(actor => {
-                
-                // Extend line
-                actor.line.attr({y2: actor.line.bbox().y2 + offsetY});
-                
-                // Move actor bottom rectangle
-                if(actor.bottomRect) {
-                    this.translateElementsY(actor.bottomRect.svgElements(), offsetY);
-                }
-
-                // Move destroyed actor
-                if(actor.cross) {
-                    this.translateElementsY(actor.cross.svgElements(), offsetY);
-                }
-            });
-          });
-
-    // Move blocks down
-    blocksStacks
-        .filter(block => block.blocks[0] && block.blocks[0].blockRect.bbox().y >= nextSignalY2)
-        .forEach(block => {
-            this.translateElementsY(block.svgElements(), offsetY);
-        }); 
     }
 
     adjustActorsAndSignals(actors: ActorElement[]): void {
@@ -514,6 +470,45 @@ export default class AdjustmentsEngine {
         }
 
         this.translateElementsX(elementsToMove, offsetX);
+    }
+
+    private _moveEverythingBelowSignal(signal: SignalElement, offsetY: number, signals: SignalElement[], blocksStacks: BlockStackElement[], actors: ActorElement[]): void {
+        
+        console.log(`Moving all elements below signal ${signal.toString()} ${offsetY}px down`);
+        const [nextSignalY1, nextSignalY2] = signal.getY();
+
+        // Get all elements under the signal and extend/move them
+        signals
+         .filter(signal => signal.getLineY()[0] >= nextSignalY2)
+         .forEach(signal => {
+
+            // Move signal down
+            this.translateElementsY(signal.svgElements(), offsetY);
+
+            // Move all actors down
+            actors.forEach(actor => {
+                
+                // Extend line
+                actor.line.attr({y2: actor.line.bbox().y2 + offsetY});
+                
+                // Move actor bottom rectangle
+                if(actor.bottomRect) {
+                    this.translateElementsY(actor.bottomRect.svgElements(), offsetY);
+                }
+
+                // Move destroyed actor
+                if(actor.cross) {
+                    this.translateElementsY(actor.cross.svgElements(), offsetY);
+                }
+            });
+          });
+
+        // Move blocks down
+        blocksStacks
+            .filter(block => block.blocks[0] && block.blocks[0].blockRect.bbox().y >= nextSignalY2)
+            .forEach(block => {
+                this.translateElementsY(block.svgElements(), offsetY);
+            }); 
     }
     
     private translateElementsX(elements: Element[], offsetX: number): void {

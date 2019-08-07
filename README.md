@@ -8,7 +8,6 @@ Features:
 * Notes
 * Actor destroyed then recreated
 * Different themes
-* Destroy actors even if they were not created by a signal
 
 Tech Features:
 * Error handling
