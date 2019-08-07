@@ -1,17 +1,14 @@
-import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption, TitleElement } from "../dao/draw/model";
+import { ActorElement, ActorRect, CrossElement, LineType, SignalElement, SignalType, Dimensions, TextOption, LineOption, TitleElement, BlockStackElement, BlockElement, RectOption } from "../dao/draw/model";
 import { ShapesGenerator } from "../dao/draw/ShapesGenerator";
-import { Actor, Signal } from "../dao/parser/model";
-import {Element, Line} from "@svgdotjs/svg.js";
+import { Actor, Signal, BlockStack } from "../dao/parser/model";
+import {Element, Line, Rect, Text} from "@svgdotjs/svg.js";
 
 /**
  * Generates sequence diagrams items: Actor, Signal, Note, ...
  */
 export default class ItemsGenerator {
 
-    signalCount: number;
-
     constructor(readonly shapesGenerator: ShapesGenerator) {
-        this.signalCount = 0;
     }
 
     drawTitle(x: string, y: number, title: string): TitleElement {
@@ -78,6 +75,157 @@ export default class ItemsGenerator {
         }
     }
 
+    /** 
+     * Draw a block and its inner blocks (if any). 
+     * If there are no signals in that block, it won't be drawn and null will be returned
+     */
+    drawBlockStack(blockStack: BlockStack, signalElements: SignalElement[]): BlockStackElement | null {
+
+        let oversizedBlock = false;
+        let oversizedBlockWidth = 0;
+        let blockStackPadding = Dimensions.BLOCK_INNER_PADDING * blockStack.blocks.length; 
+        const blockElements: BlockElement[] = [];
+
+        for(const i in blockStack.blocks) {
+            const block = blockStack.blocks[i];
+
+            const otherBlocks = blockStack.blocks.slice(+i, blockStack.blocks.length);
+            const otherBlocksSignals: Signal[] = [];
+            for(const otherBlock of otherBlocks) {
+                otherBlocksSignals.push(...otherBlock.signals);
+            }
+
+            const blockSignals = block.signals;
+            blockSignals.push(...otherBlocksSignals);
+
+            // Signals included in that current block only
+            const blockOnlySignalElements = this._getSignalElements(block.signals, signalElements);
+            if(blockOnlySignalElements.length === 0) {
+                console.warn(`Block '${block.label}' is empty so it won't be drawn`);
+                continue;
+            }
+
+            // Signals of that current block + the signals of the inner blocks
+            const blockAndOtherBlockSignalElements = this._getSignalElements(blockSignals, signalElements);
+
+            console.log(`Drawing block #${block.level} '${block.label}': ${blockSignals.map(s => s.message)}`);
+
+            const [x, y, width, height] = this._getBlockRectDimensions(blockAndOtherBlockSignalElements, blockStackPadding);
+            
+            // Drawing block label
+            const blockTypeLabel: Text = this.shapesGenerator.drawText(
+                x + Dimensions.BLOCK_TYPE_TEXT_PADDING_X, 
+                y + Dimensions.BLOCK_TYPE_TEXT_PADDING_Y, 
+                block.type.toString(), [TextOption.SMALL]);
+
+            // Drawing block type small rect
+            const blockTypeRect: Rect = this.shapesGenerator.drawRect(
+                x, y, 
+                blockTypeLabel.bbox().width + (Dimensions.BLOCK_TYPE_TEXT_PADDING_X * 2), Dimensions.BLOCK_TYPE_RECT_HEIGHT,
+                [RectOption.THIN]);
+
+            // Drawing block type label
+            const blockLabel: Text = this.shapesGenerator.drawText(
+                blockTypeRect.bbox().x2 + Dimensions.BLOCK_TYPE_TEXT_PADDING_X, 
+                y + Dimensions.BLOCK_TYPE_TEXT_PADDING_Y,
+                block.label, [TextOption.SMALL]
+            );
+
+            // Compute rect width based on the label width
+            let rectWidth = width;
+            if(blockLabel.bbox().x2 > (x + width)) {
+                rectWidth = blockLabel.bbox().x2 - x;
+                oversizedBlock = true;
+                oversizedBlockWidth = rectWidth;
+            }
+            
+            // Drawing block Rect
+            const blockRect: Rect = this.shapesGenerator.drawRect(x, y, rectWidth, height, [RectOption.DOTTED, RectOption.THIN]);
+
+            blockElements.push(new BlockElement(blockTypeLabel, blockTypeRect, blockLabel, blockRect, blockOnlySignalElements));
+
+            blockStackPadding -= Dimensions.BLOCK_INNER_PADDING;
+        }
+
+        // Resize the whole block stack if it contains an oversized block (because of the block title)
+        if(oversizedBlock === true) {
+
+            blockStackPadding = Dimensions.BLOCK_INNER_PADDING * blockStack.blocks.length; 
+
+            for(const blockEl of blockElements) {
+                blockEl.blockRect.width(oversizedBlockWidth + blockStackPadding * 2);
+                blockStackPadding -= Dimensions.BLOCK_INNER_PADDING;
+            }
+        }
+
+        if(blockElements.length === 0) {
+            return null
+        } else {
+            return new BlockStackElement(blockElements);
+        }
+    }
+
+    _getSignalElements(signals: Signal[], signalElements: SignalElement[]): SignalElement[] {
+        const result: SignalElement[] = [];
+
+        for(const signal of signals) {
+            
+            const signalElement = signalElements.filter(el => el.id === signal.id)[0];
+
+            if(signalElement) {
+                result.push(signalElement);
+            }
+        }
+
+        return result;
+    }
+
+    _getBlockRectDimensions(signalElements: SignalElement[], blockStackPadding: number): [number, number, number, number] {
+        
+        let x1 = null;
+        let x2 = null;
+        let y1 = null;
+        let y2 = null;
+
+        for(const signalElement of signalElements) {
+            
+            const [lineX1, lineX2] = signalElement.getLineX();
+            const [lineY1, lineY2] = signalElement.getLineY();
+
+            if(!x1 || lineX1 < x1) {
+                x1 = lineX1 - Dimensions.BLOCK_PADDING_X_LEFT;
+            }
+
+            if(!x2 || lineX2 > x2) {
+                x2 = lineX2 + Dimensions.BLOCK_PADDING_X_RIGHT;
+            }
+
+            if(!y1 || lineY1 < y1) {
+                y1 = lineY1 - Dimensions.BLOCK_PADDING_Y_TOP;
+            }
+
+            if(!y2 || lineY2 > y2) {
+                y2 = lineY2 + Dimensions.BLOCK_PADDING_Y_BOTTOM;
+            }
+        }
+
+        // Update points when the stack contains several blocks
+        x1 = x1 - blockStackPadding;
+        x2 = x2 + blockStackPadding;
+        y1 = y1 - Dimensions.BLOCK_PADDING_Y_TOP;
+        y2 = y2 + blockStackPadding;
+
+        const width = x2 - x1;
+        
+        let height = y2 - y1;
+        if(height < Dimensions.BLOCK_MIN_HEIGHT) {
+            height = Dimensions.BLOCK_MIN_HEIGHT;
+        }
+
+        return [x1, y1, width, height];
+    }
+
+
     _drawActorCreatedBySignal(signal: Signal, x: number, y: number, offsetY: number): ActorElement {
         // Draw rectangle
         const rect = this.shapesGenerator.drawRect(x, y, Dimensions.ACTOR_RECT_WIDTH, Dimensions.ACTOR_RECT_HEIGHT);
@@ -131,7 +279,7 @@ export default class ItemsGenerator {
         const textY = lineY - Dimensions.SIGNAL_TEXT_PADDING_Y;
         const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
-        return SignalElement.forward(this.signalCount++, line, signal.lineType, signal.type, text, actorElA, actorElB);
+        return SignalElement.forward(signal.id, line, signal.lineType, signal.type, text, actorElA, actorElB);
     }
 
     _drawSelfSignal(signal: Signal, offsetY: number, actorElA: ActorElement): SignalElement {
@@ -153,7 +301,7 @@ export default class ItemsGenerator {
         const textY = y1 + Dimensions.SIGNAL_SELF_TEXT_PADDING_Y;
         const text = this.shapesGenerator.drawText(textX, textY, signal.message);
 
-        return SignalElement.self(this.signalCount++, lines, signal.lineType, text, actorElA);
+        return SignalElement.self(signal.id, lines, signal.lineType, text, actorElA);
     }
 
     drawSignalAndActor(signal: Signal, actorElA: ActorElement, offsetY: number) : [SignalElement, ActorElement] {
@@ -176,7 +324,7 @@ export default class ItemsGenerator {
         const rectY = signalY - (Dimensions.ACTOR_RECT_HEIGHT / 2);
         const actorElB = this._drawActorCreatedBySignal(signal, rectX, rectY, offsetY);
         
-        const signalEl = SignalElement.forward(this.signalCount++, line, LineType.REQUEST, SignalType.ACTOR_CREATION, text, actorElA, actorElB);
+        const signalEl = SignalElement.forward(signal.id, line, LineType.REQUEST, SignalType.ACTOR_CREATION, text, actorElA, actorElB);
 
         return [signalEl, actorElB];
     }

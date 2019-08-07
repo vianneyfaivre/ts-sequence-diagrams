@@ -13,17 +13,21 @@ export class Actor {
 }
 
 export class Signal {
-    actorA: Actor;
-    actorB: Actor;
-    lineType: LineType;
-    type: SignalType;
-    message: string;
-
-    static destroy(actor: Actor): Signal {
-        return new Signal(actor, null, LineType.REQUEST, SignalType.ACTOR_DELETION, "");
+    
+    constructor(
+        readonly id: number, 
+        readonly actorA: Actor, 
+        readonly actorB: Actor, 
+        readonly lineType: LineType, 
+        readonly type: SignalType, 
+        readonly message: string) {
     }
 
-    static simple(actorA: Actor, actorB: Actor, lineType: string, arrowType: string, message: string): Signal {
+    static destroy(id: number, actor: Actor): Signal {
+        return new Signal(id, actor, null, LineType.REQUEST, SignalType.ACTOR_DELETION, "");
+    }
+
+    static simple(id: number, actorA: Actor, actorB: Actor, lineType: string, arrowType: string, message: string): Signal {
 
         var lineType_ = LineType.REQUEST;
         if(lineType === "--") {
@@ -35,15 +39,7 @@ export class Signal {
             type_ = SignalType.ACTOR_CREATION;
         }
 
-        return new Signal(actorA, actorB, lineType_, type_, message);
-    }
-
-    constructor(actorA: Actor, actorB: Actor, lineType: LineType, type: SignalType, message: string) {
-        this.actorA = actorA;
-        this.actorB = actorB;
-        this.message = message;
-        this.type = type;
-        this.lineType = lineType;
+        return new Signal(id, actorA, actorB, lineType_, type_, message);
     }
 
     toSameActor() {
@@ -69,5 +65,43 @@ export class Signal {
         else {
             console.error(`Signal Invalid: From '${this.actorA.name}' to '${this.actorB.name}'`);
         }
+    }
+}
+
+export class BlockStack {
+
+    currentDepth: number = 0;
+    blocks: BlockData[] = [];
+
+    startBlock(block: BlockData): void {
+        block.level = this.currentDepth++;
+        this.blocks.push(block);
+    }
+
+    endBlock(): BlockData {
+        const block = this.blocks[this.currentDepth - 1];
+        this.currentDepth--;
+        return block;
+    }
+
+    toString(): string {
+        return `Stack with ${this.blocks.length} blocks`;
+    }
+}
+
+export enum BlockType {
+    loop
+}
+
+export class BlockData {
+
+    level: number;
+    signals: Signal[] = [];
+
+    constructor(readonly type: BlockType,
+                readonly label: string) {}
+        
+    toString(): string {
+        return `Level=${this.level} Type=${this.type} Label=${this.label}`;
     }
 }

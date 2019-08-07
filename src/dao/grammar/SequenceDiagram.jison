@@ -9,7 +9,8 @@
 	// Pre-lexer code can go here
 %}
 
-%x title
+%x title_var
+%x loop_var
 
 %%
 
@@ -22,8 +23,11 @@
 "right of"        return 'PLACEMENT_RIGHTOF';
 "over"            return 'PLACEMENT_OVER';
 "note"            return 'note';
-"title"           { this.begin('title'); return 'title'; }
-<title>[^\r\n]+   { this.popState(); return 'MESSAGE'; }
+"title"           { this.begin('title_var'); return 'title'; }
+<title_var>[^\r\n]+   { this.popState(); return 'MESSAGE'; }
+"loop"           	  { this.begin('loop_var'); return 'BEGIN_LOOP'; }
+<loop_var>[^\r\n]+    { this.popState(); return 'MESSAGE'; }
+"end"			  { return 'END_BLOCK'; }
 ","               return ',';
 [^\->:,\r\n"]+    return 'ACTOR';
 \"[^"]+\"         return 'ACTOR';
@@ -37,11 +41,11 @@
 
 /lex
 
-%start start
+%start grammar_start
 
 %% /* language grammar */
 
-start
+grammar_start
 	: document 'EOF' { return yy; }
 	;
 
@@ -51,16 +55,22 @@ document
 	;
 
 line
-	: statement { }
+	: statement 					{ }
+	| BEGIN_BLOCK message			{ yy.blockStart($1, $2) }
+	| END_BLOCK						{ yy.blockEnd() }
 	| 'NL'
 	;
 
+BEGIN_BLOCK
+    : BEGIN_LOOP 				{}
+	;
+
 statement
-	: 'participant' actor { $2; }
-	| signal               { yy.addSignal($1); }
-	| note_statement       { yy.addSignal($1); }
-	| 'title' message      { yy.setTitle($2);  }
-	| 'destroy' actor_destroy 	   { yy.destroyActor($2)}
+	: 'participant' actor 		{ $2; }
+	| signal               		{ yy.addSignal($1); }
+	| note_statement       		{ $1; }
+	| 'title' message      		{ yy.setTitle($2);  }
+	| 'destroy' actor_destroy 	{ yy.destroyActor($2)}
 	;
 
 note_statement

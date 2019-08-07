@@ -1,5 +1,5 @@
 import {Element, Text, Line, Rect} from "@svgdotjs/svg.js";
-import { Actor, Signal } from '../parser/model';
+import { Actor, Signal, BlockData } from '../parser/model';
 
 export class TitleElement {
     constructor(readonly title: Text) {
@@ -78,6 +78,43 @@ export class ActorElement {
     }
 }
 
+export class BlockStackElement {
+    
+    constructor(readonly blocks: BlockElement[]) {
+    }
+
+    firstSignal(): SignalElement {
+        return this.blocks[0].signals[0];
+    }
+    
+    lastSignal(): SignalElement {
+        const lastBlock = this.blocks[this.blocks.length -1];
+        return lastBlock.signals[lastBlock.signals.length -1];
+    }
+
+    svgElements(): Element[] {
+        const result = [];
+        for(const block of this.blocks) {
+            result.push(...block.svgElements());
+        }
+        return result;
+    }
+}
+
+export class BlockElement {
+
+    constructor(readonly blockTypeLabel: Text,
+                readonly blockTypeRect: Rect,
+                readonly blockLabel: Text,
+                readonly blockRect: Rect, 
+                readonly signals: SignalElement[]) {
+    }
+
+    svgElements(): Element[] {
+        return [this.blockTypeLabel, this.blockTypeRect, this.blockLabel, this.blockRect];
+    }
+}
+
 export class CrossElement {
     constructor(
         readonly line1: Line, 
@@ -149,14 +186,59 @@ export class SignalElement {
         return this.actorA.actor.name === this.actorB.actor.name; 
     }
 
-    toString(): string {
-        const toSelf = this.actorA.actor.name === this.actorB.actor.name;
-        
-        if(toSelf === true) {
-            return `Self-Signal '${this.actorA.actor.name}': '${this.text.toString()}'`;
-        } else {
-            return `Signal from '${this.actorA.actor.name}' to '${this.actorB.actor.name}': '${this.text.toString()}'`;
+    getLineX(): [number, number] {
+        if(this.lines && this.lines.length > 0) {
+            return [this.lines[0].bbox().x, this.text.bbox().x2];
         }
+        
+        if(this.line) {
+            return [this.line.bbox().x, this.line.bbox().x2];
+        }
+
+        // TODO error handling
+        return [0, 0];
+    }
+
+    getLineY(): [number, number] {
+        if(this.lines && this.lines.length > 0) {
+            return [this.lines[0].bbox().y, this.lines[this.lines.length-1].bbox().y];
+        }
+        
+        if(this.line) {
+            return [this.line.bbox().y, this.line.bbox().y];
+        }
+
+        // TODO error handling
+        return [0, 0];
+    }
+
+    /** Get y1 and y2 across all elements of that signal (lines, text, ...) */
+    getY(): [number, number] {
+
+        // Self signal
+        if(this.lines && this.lines.length > 0) {
+            // y1 = first line y
+            // y2 = third line y
+            return this.getLineY();
+        }
+
+        // Classic signal
+        if(this.line) {
+            // y1 = text y1
+            const y1 = this.text.bbox().y;
+
+            // y2 = line y
+            const y2 = this.line.bbox().y;
+
+            return [y1, y2];
+        }
+
+        // TODO error handling
+        return [0, 0];
+    }
+
+    toString(): string {
+        return `#${this.id} '${this.text.text()}'`;
     }
 }
 
@@ -184,7 +266,13 @@ export enum LineOption {
 
 export enum TextOption {
     CENTERED,
-    TITLE
+    TITLE,
+    SMALL
+}
+
+export enum RectOption {
+    THIN,
+    DOTTED
 }
 
 export class Dimensions {
@@ -233,4 +321,31 @@ export class Dimensions {
 
     /* Actor Creation Signal line width */
     static SIGNAL_CREATION_WIDTH = 100;
+
+    /* Block minimum height */
+    static BLOCK_MIN_HEIGHT = 50;
+
+    /* Padding to use when having several inner blocks */
+    static BLOCK_INNER_PADDING = 10;
+
+    /* Block Rectangle X Left Padding */
+    static BLOCK_PADDING_X_LEFT = 30; 
+
+    /* Block Rectangle X Left Padding */
+    static BLOCK_PADDING_X_RIGHT = 10; 
+
+    /* Block Rectangle Y Top Padding */
+    static BLOCK_PADDING_Y_TOP = 15; 
+
+    /* Block Rectangle Y Bottom Padding */
+    static BLOCK_PADDING_Y_BOTTOM = 5; 
+
+    /* Block Type Text (ex: loop) X Padding */
+    static BLOCK_TYPE_TEXT_PADDING_X = 2;
+
+    /* Block Type Text (ex: loop) Y Padding */
+    static BLOCK_TYPE_TEXT_PADDING_Y = 10; 
+
+    /* Block Type Rect Height */
+    static BLOCK_TYPE_RECT_HEIGHT = 15; 
 }

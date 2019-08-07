@@ -3,7 +3,7 @@
 ## TODO
 
 Features:
-* Loops
+* Other kind of blocks: opt, alt, etc...
 * Participants order
 * Notes
 * Actor destroyed then recreated
@@ -11,19 +11,22 @@ Features:
 
 Tech Features:
 * Error handling
-  * use exceptions
+  * use exceptions: ParsingError, DrawingError
   * use error codes
-* Automate the grammar build (use make)
-* silent logs
+* rewrite logs to have a prefix with the function name
+* Test : describe this app
+* build --production
 
 Bugs:
+* Can't destroy an actor if it has not been created by a signal
 * Double Destroy
-* Handle incorrect inputs
 * trim messages
 
 Site:
+* use https://mithril.js.org/
 * Textarea + SVG 
 * Draw on input/textarea change
+* Display parsing errors
 * Clickable samples
 * Export as PNG / SVG
 * About Page
@@ -37,14 +40,6 @@ Build the grammar using Jison:
 ```
 npm install jison -g
 npm run build-grammar
-```
-
-To export the generated code as a module, update the end of SequenceDiagram.js:
-```
-Parser.prototype.parse = parser.parse;
-return new Parser;
-})();
-export default SequenceDiagram;
 ```
 
 ## Run
