@@ -23,14 +23,9 @@ Bugs:
 * trim messages
 
 Site:
-* use https://mithril.js.org/
-* Textarea + SVG 
+* Do a production build
+* 2 columns: Textarea + SVG 
 * Draw on input/textarea change
-* Display parsing errors
-* Clickable samples
-* Export as PNG / SVG
-* About Page
-* Support Page
 * Save in localStorage
 
 ## Build the grammar
