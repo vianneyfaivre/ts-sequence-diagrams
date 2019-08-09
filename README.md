@@ -14,7 +14,6 @@ Tech Features:
   * use exceptions: ParsingError, DrawingError
   * use error codes
 * rewrite logs to have a prefix with the function name
-* Test : describe this app
 * build --production
 
 Bugs:

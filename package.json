@@ -8,9 +8,10 @@
   },
   "scripts": {
     "build": "webpack --config webpack.config.js --parallel",
+    "build-prod": "webpack --config webpack.prod.config.js",
     "build-grammar": "bash scripts/build-grammar.sh",
-    "watch": "webpack --watch",
-    "start": "webpack --mode=development --watch && webpack-dev-server"
+    "watch": "webpack --watch --config webpack.config.js ",
+    "start": "webpack --mode=development --watch --config webpack.config.js && webpack-dev-server --config webpack.config.js "
   },
   "author": "Vianney FAIVRE",
   "license": "GPL-3.0-only",
