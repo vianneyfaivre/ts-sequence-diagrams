@@ -1,45 +1,30 @@
 # Typescript Sequence Diagrams
 
-## TODO
+UML Sequence Diagrams editor, built with Jison, Typescript and SVG.js.
 
-Features:
-* Other kind of blocks: opt, alt, etc...
-* Participants order
-* Notes
-* Actor destroyed then recreated
-* Different themes
+Inspired by [Web Sequence Diagrams](https://www.websequencediagrams.com/) and [js-sequence-diagrams](https://bramp.github.io/js-sequence-diagrams/)
 
-Tech Features:
-* Error handling
-  * use exceptions: ParsingError, DrawingError
-  * use error codes
-* rewrite logs to have a prefix with the function name
-* build --production
+## Local Development
 
-Bugs:
-* Can't destroy an actor if it has not been created by a signal
-* Double Destroy
-* trim messages
+### Webpack dev server
 
-Site:
-* Do a production build
-* 2 columns: Textarea + SVG 
-* Draw on input/textarea change
-* Save in localStorage
+```
+npm run start
+```
 
-## Build the grammar
+Open one of the HTML samples in `test/`.
 
-Build the grammar using Jison:
+### Build the Jison grammar
 
 ```
 npm install jison -g
 npm run build-grammar
 ```
 
-## Run
+## Release 
 
 ```
-npm run start
+npm run build-prod
 ```
 
-Open `./test/basic.html`
+The released javascript file will be placed into `dist/`.
