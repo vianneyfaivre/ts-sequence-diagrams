@@ -19,12 +19,12 @@
     "@svgdotjs/svg.js": "^3.0.13"
   },
   "devDependencies": {
-    "imports-loader": "^0.8.0",
+    "imports-loader": "^4.0.1",
     "lex-parser": "^0.1.4",
-    "ts-loader": "^6.0.4",
+    "ts-loader": "^9.4.2",
     "typescript": "^3.5.2",
-    "webpack": "^4.35.0",
-    "webpack-cli": "^3.3.5",
+    "webpack": "^5.75.0",
+    "webpack-cli": "^5.0.1",
     "webpack-dev-server": "^3.7.2"
   }
 }
